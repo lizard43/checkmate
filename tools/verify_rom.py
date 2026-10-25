@@ -18,3 +18,13 @@ for i,(a,b) in enumerate(zip(actual,reference)):
 for name,part in zip(names,original):
     print("PASS",name,len(part),"SHA1",hashlib.sha1(part).hexdigest())
 print("PASS exact",game,len(reference),"SHA256",hashlib.sha256(reference).hexdigest())
+
+# Export rebuilt, verified ROM devices and emulator archive.
+from zipfile import ZIP_DEFLATED,ZipFile
+out=ROOT/"roms"/"build";out.mkdir(parents=True,exist_ok=True)
+(out/(game+".bin")).write_bytes(actual)
+for j,name in enumerate(names):
+    (out/name).write_bytes(actual[j*size:(j+1)*size])
+with ZipFile(out/(game+".zip"),"w",compression=ZIP_DEFLATED) as packed:
+    for name in names:packed.write(out/name,arcname=name)
+print("PASS rebuild artifacts",out)
