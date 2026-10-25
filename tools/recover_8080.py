@@ -19,7 +19,7 @@ ILLEGAL={8,16,24,32,40,48,56,0xcb,0xdd,0xed,0xfd,0xd9}
 def decode(mem,pc):
     op=mem[pc];b=mem[pc+1] if pc+1<len(mem) else 0
     w=b+((mem[pc+2] if pc+2<len(mem) else 0)<<8)
-    H=f"\${w:04X}";B=f"\${b:02X}"
+    H=f"${w:04X}";B=f"${b:02X}"
     if op in ILLEGAL:return None,1,"data",None
     if 0x40<=op<=0x7f:
         return ("HALT",1,"stop",None) if op==0x76 else (f"LD {REG[op>>3&7]},{REG[op&7]}",1,"next",None)
@@ -41,7 +41,7 @@ def decode(mem,pc):
     if op==0xcd:return "CALL "+H,3,"call",w
     if op&0xcf==0xc1:return "POP "+STACK[op>>4&3],1,"next",None
     if op&0xcf==0xc5:return "PUSH "+STACK[op>>4&3],1,"next",None
-    if op&0xc7==0xc7:return f"RST \${op&0x38:02X}",1,"call",op&0x38
+    if op&0xc7==0xc7:return f"RST ${op&0x38:02X}",1,"call",op&0x38
     if op&0xc7==0xc6:return ARITH[op>>3&7]+B,2,"next",None
     if op==0xd3:return f"OUT ({B}),A",2,"next",None
     if op==0xdb:return f"IN A,({B})",2,"next",None
@@ -91,14 +91,14 @@ def main():
          "; Original byte offsets are preserved; zmac v1.3 must rebuild exactly."]
     for part,name in enumerate(names):
         lo=part*size;hi=lo+size
-        asm.extend(["",f"        ORG \${lo:04X}",f"; Device {name}, SHA1 {hashlib.sha1(parts[part]).hexdigest()}"])
+        asm.extend(["",f"        ORG ${lo:04X}",f"; Device {name}, SHA1 {hashlib.sha1(parts[part]).hexdigest()}"])
         pc=lo
         while pc<hi:
             if pc in entries and pc in code:asm.append(f"NATIVE_{pc:04X}:")
             if pc in code and pc+code[pc][1]<=hi:
                 inst,n,_,_=code[pc]
                 raw=mem[pc:pc+n].hex(" ").upper()
-                asm.append(f"        {inst}  ; ROM \${pc:04X}: {raw}")
+                asm.append(f"        {inst}  ; ROM ${pc:04X}: {raw}")
                 pc+=n
             else:
                 # Preserve all unclassified bytes, never misidentify as native code.
@@ -106,7 +106,7 @@ def main():
                 for p in range(pc+1,stop):
                     if p in code or p in entries:stop=p;break
                 raw=mem[pc:stop]
-                asm.append("        DB "+",".join(f"\${b:02X}" for b in raw)+f" ; ROM \${pc:04X} unclassified")
+                asm.append("        DB "+",".join(f"${b:02X}" for b in raw)+f" ; ROM ${pc:04X} unclassified")
                 pc=stop
     (ROOT/"src"/(game+".asm")).write_text("\n".join(asm)+"\n")
     report={"game":game,"cpu":"Intel 8080","rom_size":len(mem),"sha256":digest,
