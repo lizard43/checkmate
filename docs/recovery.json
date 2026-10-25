@@ -1,0 +1,1582 @@
+{
+  "game": "checkmate",
+  "cpu": "Intel 8080",
+  "rom_size": 4096,
+  "sha256": "8e5841bedb5c866b8c6cf7c1f6b2c45d441f86eee5863c191df36bbfdac76263",
+  "devices": [
+    {
+      "name": "checkmat.h",
+      "base": 0,
+      "size": 1024,
+      "sha1": "f758599d6393398a6a8e6e7399dc1a3862604f65"
+    },
+    {
+      "name": "checkmat.g",
+      "base": 1024,
+      "size": 1024,
+      "sha1": "484ff9bfb95166ba09f34c753a7908a73de3cc7d"
+    },
+    {
+      "name": "checkmat.f",
+      "base": 2048,
+      "size": 1024,
+      "sha1": "39e0cf502735819a7e1d933e3686945fcfae21af"
+    },
+    {
+      "name": "checkmat.e",
+      "base": 3072,
+      "size": 1024,
+      "sha1": "453f95dd31968d439339c41e625481170437eb0f"
+    }
+  ],
+  "native_instruction_count": 1452,
+  "native_byte_count": 2601,
+  "edges": [
+    {
+      "source": 5,
+      "target": 151,
+      "type": "jump"
+    },
+    {
+      "source": 13,
+      "target": 43,
+      "type": "jump"
+    },
+    {
+      "source": 21,
+      "target": 43,
+      "type": "jump"
+    },
+    {
+      "source": 155,
+      "target": 1273,
+      "type": "branch"
+    },
+    {
+      "source": 171,
+      "target": 189,
+      "type": "branch"
+    },
+    {
+      "source": 179,
+      "target": 187,
+      "type": "branch"
+    },
+    {
+      "source": 184,
+      "target": 189,
+      "type": "jump"
+    },
+    {
+      "source": 44,
+      "target": 127,
+      "type": "call"
+    },
+    {
+      "source": 49,
+      "target": 121,
+      "type": "branch"
+    },
+    {
+      "source": 55,
+      "target": 146,
+      "type": "call"
+    },
+    {
+      "source": 61,
+      "target": 146,
+      "type": "call"
+    },
+    {
+      "source": 65,
+      "target": 146,
+      "type": "call"
+    },
+    {
+      "source": 72,
+      "target": 83,
+      "type": "branch"
+    },
+    {
+      "source": 91,
+      "target": 97,
+      "type": "branch"
+    },
+    {
+      "source": 101,
+      "target": 107,
+      "type": "branch"
+    },
+    {
+      "source": 115,
+      "target": 121,
+      "type": "branch"
+    },
+    {
+      "source": 1276,
+      "target": 3339,
+      "type": "call"
+    },
+    {
+      "source": 1285,
+      "target": 1300,
+      "type": "call"
+    },
+    {
+      "source": 1297,
+      "target": 1650,
+      "type": "jump"
+    },
+    {
+      "source": 193,
+      "target": 166,
+      "type": "branch"
+    },
+    {
+      "source": 202,
+      "target": 250,
+      "type": "branch"
+    },
+    {
+      "source": 207,
+      "target": 225,
+      "type": "branch"
+    },
+    {
+      "source": 215,
+      "target": 223,
+      "type": "branch"
+    },
+    {
+      "source": 220,
+      "target": 225,
+      "type": "jump"
+    },
+    {
+      "source": 3372,
+      "target": 3355,
+      "type": "branch"
+    },
+    {
+      "source": 1304,
+      "target": 1301,
+      "type": "branch"
+    },
+    {
+      "source": 1308,
+      "target": 1301,
+      "type": "branch"
+    },
+    {
+      "source": 1650,
+      "target": 1692,
+      "type": "call"
+    },
+    {
+      "source": 1656,
+      "target": 3512,
+      "type": "call"
+    },
+    {
+      "source": 1662,
+      "target": 3512,
+      "type": "call"
+    },
+    {
+      "source": 1667,
+      "target": 24,
+      "type": "call"
+    },
+    {
+      "source": 1668,
+      "target": 1692,
+      "type": "call"
+    },
+    {
+      "source": 1674,
+      "target": 3512,
+      "type": "call"
+    },
+    {
+      "source": 1680,
+      "target": 3512,
+      "type": "call"
+    },
+    {
+      "source": 1685,
+      "target": 24,
+      "type": "call"
+    },
+    {
+      "source": 1686,
+      "target": 1749,
+      "type": "call"
+    },
+    {
+      "source": 1689,
+      "target": 1650,
+      "type": "jump"
+    },
+    {
+      "source": 256,
+      "target": 285,
+      "type": "branch"
+    },
+    {
+      "source": 262,
+      "target": 280,
+      "type": "branch"
+    },
+    {
+      "source": 270,
+      "target": 278,
+      "type": "branch"
+    },
+    {
+      "source": 275,
+      "target": 280,
+      "type": "jump"
+    },
+    {
+      "source": 229,
+      "target": 196,
+      "type": "branch"
+    },
+    {
+      "source": 237,
+      "target": 245,
+      "type": "branch"
+    },
+    {
+      "source": 242,
+      "target": 247,
+      "type": "jump"
+    },
+    {
+      "source": 1698,
+      "target": 3345,
+      "type": "jump"
+    },
+    {
+      "source": 3512,
+      "target": 3540,
+      "type": "call"
+    },
+    {
+      "source": 3516,
+      "target": 1100,
+      "type": "call"
+    },
+    {
+      "source": 3522,
+      "target": 3515,
+      "type": "branch"
+    },
+    {
+      "source": 24,
+      "target": 3453,
+      "type": "jump"
+    },
+    {
+      "source": 1756,
+      "target": 2038,
+      "type": "call"
+    },
+    {
+      "source": 1762,
+      "target": 1782,
+      "type": "branch"
+    },
+    {
+      "source": 1765,
+      "target": 2038,
+      "type": "call"
+    },
+    {
+      "source": 1771,
+      "target": 1782,
+      "type": "branch"
+    },
+    {
+      "source": 1774,
+      "target": 2038,
+      "type": "call"
+    },
+    {
+      "source": 1779,
+      "target": 1800,
+      "type": "branch"
+    },
+    {
+      "source": 1787,
+      "target": 1312,
+      "type": "call"
+    },
+    {
+      "source": 1792,
+      "target": 1756,
+      "type": "branch"
+    },
+    {
+      "source": 1796,
+      "target": 1756,
+      "type": "branch"
+    },
+    {
+      "source": 288,
+      "target": 163,
+      "type": "branch"
+    },
+    {
+      "source": 293,
+      "target": 332,
+      "type": "branch"
+    },
+    {
+      "source": 311,
+      "target": 315,
+      "type": "branch"
+    },
+    {
+      "source": 322,
+      "target": 309,
+      "type": "branch"
+    },
+    {
+      "source": 326,
+      "target": 303,
+      "type": "branch"
+    },
+    {
+      "source": 329,
+      "target": 389,
+      "type": "jump"
+    },
+    {
+      "source": 282,
+      "target": 250,
+      "type": "jump"
+    },
+    {
+      "source": 247,
+      "target": 196,
+      "type": "jump"
+    },
+    {
+      "source": 3544,
+      "target": 3228,
+      "type": "call"
+    },
+    {
+      "source": 3551,
+      "target": 3560,
+      "type": "call"
+    },
+    {
+      "source": 3555,
+      "target": 3228,
+      "type": "call"
+    },
+    {
+      "source": 1105,
+      "target": 1115,
+      "type": "branch"
+    },
+    {
+      "source": 3459,
+      "target": 1312,
+      "type": "call"
+    },
+    {
+      "source": 3466,
+      "target": 3459,
+      "type": "branch"
+    },
+    {
+      "source": 2046,
+      "target": 2058,
+      "type": "branch"
+    },
+    {
+      "source": 2052,
+      "target": 2058,
+      "type": "branch"
+    },
+    {
+      "source": 1800,
+      "target": 2038,
+      "type": "call"
+    },
+    {
+      "source": 1807,
+      "target": 1782,
+      "type": "branch"
+    },
+    {
+      "source": 1812,
+      "target": 1782,
+      "type": "branch"
+    },
+    {
+      "source": 1818,
+      "target": 2453,
+      "type": "call"
+    },
+    {
+      "source": 1837,
+      "target": 1878,
+      "type": "branch"
+    },
+    {
+      "source": 1843,
+      "target": 3443,
+      "type": "call"
+    },
+    {
+      "source": 1857,
+      "target": 1100,
+      "type": "call"
+    },
+    {
+      "source": 1862,
+      "target": 24,
+      "type": "call"
+    },
+    {
+      "source": 1867,
+      "target": 1851,
+      "type": "branch"
+    },
+    {
+      "source": 1875,
+      "target": 1100,
+      "type": "call"
+    },
+    {
+      "source": 1878,
+      "target": 2798,
+      "type": "call"
+    },
+    {
+      "source": 1885,
+      "target": 1899,
+      "type": "branch"
+    },
+    {
+      "source": 1892,
+      "target": 1904,
+      "type": "branch"
+    },
+    {
+      "source": 1901,
+      "target": 1910,
+      "type": "branch"
+    },
+    {
+      "source": 1916,
+      "target": 40,
+      "type": "call"
+    },
+    {
+      "source": 1919,
+      "target": 1929,
+      "type": "branch"
+    },
+    {
+      "source": 1925,
+      "target": 32,
+      "type": "call"
+    },
+    {
+      "source": 1926,
+      "target": 1913,
+      "type": "jump"
+    },
+    {
+      "source": 1319,
+      "target": 1358,
+      "type": "branch"
+    },
+    {
+      "source": 1329,
+      "target": 3448,
+      "type": "call"
+    },
+    {
+      "source": 1340,
+      "target": 3339,
+      "type": "call"
+    },
+    {
+      "source": 1346,
+      "target": 3526,
+      "type": "call"
+    },
+    {
+      "source": 1349,
+      "target": 1701,
+      "type": "call"
+    },
+    {
+      "source": 1352,
+      "target": 1312,
+      "type": "call"
+    },
+    {
+      "source": 1355,
+      "target": 1352,
+      "type": "jump"
+    },
+    {
+      "source": 354,
+      "target": 349,
+      "type": "branch"
+    },
+    {
+      "source": 358,
+      "target": 349,
+      "type": "branch"
+    },
+    {
+      "source": 362,
+      "target": 375,
+      "type": "branch"
+    },
+    {
+      "source": 369,
+      "target": 1024,
+      "type": "call"
+    },
+    {
+      "source": 379,
+      "target": 345,
+      "type": "branch"
+    },
+    {
+      "source": 386,
+      "target": 0,
+      "type": "branch"
+    },
+    {
+      "source": 391,
+      "target": 389,
+      "type": "jump"
+    },
+    {
+      "source": 3567,
+      "target": 3228,
+      "type": "jump"
+    },
+    {
+      "source": 1116,
+      "target": 1080,
+      "type": "call"
+    },
+    {
+      "source": 1133,
+      "target": 1138,
+      "type": "branch"
+    },
+    {
+      "source": 1140,
+      "target": 1145,
+      "type": "branch"
+    },
+    {
+      "source": 1152,
+      "target": 1130,
+      "type": "branch"
+    },
+    {
+      "source": 1169,
+      "target": 1164,
+      "type": "branch"
+    },
+    {
+      "source": 1179,
+      "target": 1160,
+      "type": "branch"
+    },
+    {
+      "source": 1185,
+      "target": 1119,
+      "type": "branch"
+    },
+    {
+      "source": 2459,
+      "target": 3345,
+      "type": "call"
+    },
+    {
+      "source": 2468,
+      "target": 3345,
+      "type": "call"
+    },
+    {
+      "source": 2477,
+      "target": 3345,
+      "type": "call"
+    },
+    {
+      "source": 2485,
+      "target": 3293,
+      "type": "call"
+    },
+    {
+      "source": 2493,
+      "target": 3293,
+      "type": "call"
+    },
+    {
+      "source": 2502,
+      "target": 1300,
+      "type": "call"
+    },
+    {
+      "source": 2512,
+      "target": 3131,
+      "type": "call"
+    },
+    {
+      "source": 2518,
+      "target": 3131,
+      "type": "call"
+    },
+    {
+      "source": 2522,
+      "target": 2509,
+      "type": "branch"
+    },
+    {
+      "source": 2530,
+      "target": 3131,
+      "type": "call"
+    },
+    {
+      "source": 2536,
+      "target": 3131,
+      "type": "call"
+    },
+    {
+      "source": 2540,
+      "target": 2527,
+      "type": "branch"
+    },
+    {
+      "source": 2547,
+      "target": 2568,
+      "type": "branch"
+    },
+    {
+      "source": 2561,
+      "target": 997,
+      "type": "call"
+    },
+    {
+      "source": 2585,
+      "target": 40,
+      "type": "call"
+    },
+    {
+      "source": 2588,
+      "target": 3305,
+      "type": "call"
+    },
+    {
+      "source": 2594,
+      "target": 40,
+      "type": "call"
+    },
+    {
+      "source": 2602,
+      "target": 3529,
+      "type": "call"
+    },
+    {
+      "source": 2605,
+      "target": 3274,
+      "type": "call"
+    },
+    {
+      "source": 2611,
+      "target": 40,
+      "type": "call"
+    },
+    {
+      "source": 2614,
+      "target": 3529,
+      "type": "call"
+    },
+    {
+      "source": 2623,
+      "target": 3228,
+      "type": "call"
+    },
+    {
+      "source": 2630,
+      "target": 40,
+      "type": "call"
+    },
+    {
+      "source": 2641,
+      "target": 2645,
+      "type": "branch"
+    },
+    {
+      "source": 2658,
+      "target": 40,
+      "type": "call"
+    },
+    {
+      "source": 2667,
+      "target": 3131,
+      "type": "call"
+    },
+    {
+      "source": 2677,
+      "target": 32,
+      "type": "call"
+    },
+    {
+      "source": 2680,
+      "target": 2581,
+      "type": "branch"
+    },
+    {
+      "source": 2698,
+      "target": 40,
+      "type": "call"
+    },
+    {
+      "source": 2712,
+      "target": 2772,
+      "type": "branch"
+    },
+    {
+      "source": 2717,
+      "target": 2736,
+      "type": "branch"
+    },
+    {
+      "source": 2722,
+      "target": 2736,
+      "type": "branch"
+    },
+    {
+      "source": 2732,
+      "target": 2772,
+      "type": "branch"
+    },
+    {
+      "source": 2804,
+      "target": 1312,
+      "type": "call"
+    },
+    {
+      "source": 2816,
+      "target": 2804,
+      "type": "branch"
+    },
+    {
+      "source": 2825,
+      "target": 3228,
+      "type": "call"
+    },
+    {
+      "source": 2830,
+      "target": 2869,
+      "type": "branch"
+    },
+    {
+      "source": 2842,
+      "target": 2869,
+      "type": "branch"
+    },
+    {
+      "source": 2848,
+      "target": 2869,
+      "type": "branch"
+    },
+    {
+      "source": 2852,
+      "target": 2876,
+      "type": "call"
+    },
+    {
+      "source": 2858,
+      "target": 3228,
+      "type": "call"
+    },
+    {
+      "source": 2862,
+      "target": 3203,
+      "type": "call"
+    },
+    {
+      "source": 2866,
+      "target": 3385,
+      "type": "call"
+    },
+    {
+      "source": 2872,
+      "target": 32,
+      "type": "call"
+    },
+    {
+      "source": 2873,
+      "target": 2804,
+      "type": "jump"
+    },
+    {
+      "source": 40,
+      "target": 3225,
+      "type": "jump"
+    },
+    {
+      "source": 1930,
+      "target": 2876,
+      "type": "call"
+    },
+    {
+      "source": 1934,
+      "target": 1942,
+      "type": "branch"
+    },
+    {
+      "source": 1939,
+      "target": 3252,
+      "type": "call"
+    },
+    {
+      "source": 1943,
+      "target": 1971,
+      "type": "call"
+    },
+    {
+      "source": 1949,
+      "target": 2063,
+      "type": "call"
+    },
+    {
+      "source": 1957,
+      "target": 1964,
+      "type": "branch"
+    },
+    {
+      "source": 1962,
+      "target": 24,
+      "type": "call"
+    },
+    {
+      "source": 32,
+      "target": 3240,
+      "type": "jump"
+    },
+    {
+      "source": 1362,
+      "target": 1390,
+      "type": "branch"
+    },
+    {
+      "source": 1370,
+      "target": 1387,
+      "type": "branch"
+    },
+    {
+      "source": 1384,
+      "target": 1390,
+      "type": "jump"
+    },
+    {
+      "source": 3526,
+      "target": 3540,
+      "type": "call"
+    },
+    {
+      "source": 3530,
+      "target": 1024,
+      "type": "call"
+    },
+    {
+      "source": 3536,
+      "target": 3529,
+      "type": "branch"
+    },
+    {
+      "source": 1708,
+      "target": 3526,
+      "type": "branch"
+    },
+    {
+      "source": 1716,
+      "target": 3526,
+      "type": "branch"
+    },
+    {
+      "source": 1721,
+      "target": 3526,
+      "type": "jump"
+    },
+    {
+      "source": 1030,
+      "target": 1053,
+      "type": "branch"
+    },
+    {
+      "source": 1042,
+      "target": 1046,
+      "type": "branch"
+    },
+    {
+      "source": 1048,
+      "target": 1037,
+      "type": "branch"
+    },
+    {
+      "source": 3301,
+      "target": 3298,
+      "type": "branch"
+    },
+    {
+      "source": 3134,
+      "target": 3179,
+      "type": "call"
+    },
+    {
+      "source": 3138,
+      "target": 3152,
+      "type": "branch"
+    },
+    {
+      "source": 3149,
+      "target": 3156,
+      "type": "jump"
+    },
+    {
+      "source": 1000,
+      "target": 1012,
+      "type": "branch"
+    },
+    {
+      "source": 1005,
+      "target": 1024,
+      "type": "call"
+    },
+    {
+      "source": 1008,
+      "target": 1019,
+      "type": "jump"
+    },
+    {
+      "source": 3326,
+      "target": 3321,
+      "type": "branch"
+    },
+    {
+      "source": 3335,
+      "target": 3314,
+      "type": "branch"
+    },
+    {
+      "source": 3277,
+      "target": 40,
+      "type": "call"
+    },
+    {
+      "source": 3286,
+      "target": 3214,
+      "type": "call"
+    },
+    {
+      "source": 3290,
+      "target": 997,
+      "type": "jump"
+    },
+    {
+      "source": 2775,
+      "target": 32,
+      "type": "call"
+    },
+    {
+      "source": 2780,
+      "target": 2695,
+      "type": "branch"
+    },
+    {
+      "source": 2785,
+      "target": 24,
+      "type": "call"
+    },
+    {
+      "source": 2786,
+      "target": 2689,
+      "type": "jump"
+    },
+    {
+      "source": 2737,
+      "target": 3203,
+      "type": "call"
+    },
+    {
+      "source": 2745,
+      "target": 3295,
+      "type": "call"
+    },
+    {
+      "source": 2752,
+      "target": 2789,
+      "type": "call"
+    },
+    {
+      "source": 2758,
+      "target": 2789,
+      "type": "call"
+    },
+    {
+      "source": 2769,
+      "target": 3379,
+      "type": "call"
+    },
+    {
+      "source": 2888,
+      "target": 2987,
+      "type": "branch"
+    },
+    {
+      "source": 2905,
+      "target": 3023,
+      "type": "call"
+    },
+    {
+      "source": 2918,
+      "target": 2966,
+      "type": "branch"
+    },
+    {
+      "source": 2925,
+      "target": 3214,
+      "type": "call"
+    },
+    {
+      "source": 2930,
+      "target": 2944,
+      "type": "branch"
+    },
+    {
+      "source": 2933,
+      "target": 3473,
+      "type": "call"
+    },
+    {
+      "source": 2941,
+      "target": 2959,
+      "type": "jump"
+    },
+    {
+      "source": 3398,
+      "target": 3389,
+      "type": "branch"
+    },
+    {
+      "source": 3255,
+      "target": 3473,
+      "type": "call"
+    },
+    {
+      "source": 3266,
+      "target": 3264,
+      "type": "branch"
+    },
+    {
+      "source": 1976,
+      "target": 2002,
+      "type": "branch"
+    },
+    {
+      "source": 1979,
+      "target": 2019,
+      "type": "call"
+    },
+    {
+      "source": 1982,
+      "target": 1987,
+      "type": "branch"
+    },
+    {
+      "source": 1990,
+      "target": 1998,
+      "type": "branch"
+    },
+    {
+      "source": 1995,
+      "target": 1989,
+      "type": "jump"
+    },
+    {
+      "source": 2077,
+      "target": 2086,
+      "type": "branch"
+    },
+    {
+      "source": 2083,
+      "target": 3379,
+      "type": "call"
+    },
+    {
+      "source": 2099,
+      "target": 3379,
+      "type": "call"
+    },
+    {
+      "source": 2115,
+      "target": 3228,
+      "type": "call"
+    },
+    {
+      "source": 2129,
+      "target": 3161,
+      "type": "call"
+    },
+    {
+      "source": 2132,
+      "target": 2188,
+      "type": "branch"
+    },
+    {
+      "source": 2138,
+      "target": 3131,
+      "type": "call"
+    },
+    {
+      "source": 2147,
+      "target": 3228,
+      "type": "call"
+    },
+    {
+      "source": 2150,
+      "target": 3380,
+      "type": "call"
+    },
+    {
+      "source": 2176,
+      "target": 3419,
+      "type": "jump"
+    },
+    {
+      "source": 1967,
+      "target": 32,
+      "type": "call"
+    },
+    {
+      "source": 1968,
+      "target": 1878,
+      "type": "jump"
+    },
+    {
+      "source": 3244,
+      "target": 3249,
+      "type": "branch"
+    },
+    {
+      "source": 1390,
+      "target": 3473,
+      "type": "call"
+    },
+    {
+      "source": 1407,
+      "target": 1405,
+      "type": "branch"
+    },
+    {
+      "source": 1421,
+      "target": 3217,
+      "type": "call"
+    },
+    {
+      "source": 1435,
+      "target": 1447,
+      "type": "branch"
+    },
+    {
+      "source": 1444,
+      "target": 1450,
+      "type": "jump"
+    },
+    {
+      "source": 1055,
+      "target": 1082,
+      "type": "call"
+    },
+    {
+      "source": 1073,
+      "target": 1062,
+      "type": "branch"
+    },
+    {
+      "source": 1016,
+      "target": 1020,
+      "type": "call"
+    },
+    {
+      "source": 2790,
+      "target": 2795,
+      "type": "branch"
+    },
+    {
+      "source": 3379,
+      "target": 40,
+      "type": "call"
+    },
+    {
+      "source": 3381,
+      "target": 3203,
+      "type": "call"
+    },
+    {
+      "source": 2987,
+      "target": 3021,
+      "type": "call"
+    },
+    {
+      "source": 3000,
+      "target": 3012,
+      "type": "branch"
+    },
+    {
+      "source": 3007,
+      "target": 3005,
+      "type": "branch"
+    },
+    {
+      "source": 3023,
+      "target": 3037,
+      "type": "call"
+    },
+    {
+      "source": 3027,
+      "target": 3048,
+      "type": "call"
+    },
+    {
+      "source": 3032,
+      "target": 3048,
+      "type": "call"
+    },
+    {
+      "source": 2971,
+      "target": 2983,
+      "type": "branch"
+    },
+    {
+      "source": 2974,
+      "target": 3252,
+      "type": "call"
+    },
+    {
+      "source": 2977,
+      "target": 3217,
+      "type": "call"
+    },
+    {
+      "source": 2952,
+      "target": 2983,
+      "type": "branch"
+    },
+    {
+      "source": 2956,
+      "target": 2950,
+      "type": "branch"
+    },
+    {
+      "source": 2963,
+      "target": 2974,
+      "type": "jump"
+    },
+    {
+      "source": 3506,
+      "target": 3481,
+      "type": "branch"
+    },
+    {
+      "source": 2002,
+      "target": 2019,
+      "type": "call"
+    },
+    {
+      "source": 2007,
+      "target": 2015,
+      "type": "branch"
+    },
+    {
+      "source": 2012,
+      "target": 2006,
+      "type": "jump"
+    },
+    {
+      "source": 2023,
+      "target": 2028,
+      "type": "branch"
+    },
+    {
+      "source": 2030,
+      "target": 2038,
+      "type": "call"
+    },
+    {
+      "source": 3163,
+      "target": 3179,
+      "type": "call"
+    },
+    {
+      "source": 3167,
+      "target": 3174,
+      "type": "branch"
+    },
+    {
+      "source": 2188,
+      "target": 3203,
+      "type": "call"
+    },
+    {
+      "source": 2197,
+      "target": 3419,
+      "type": "call"
+    },
+    {
+      "source": 2203,
+      "target": 3560,
+      "type": "call"
+    },
+    {
+      "source": 1457,
+      "target": 3228,
+      "type": "call"
+    },
+    {
+      "source": 1477,
+      "target": 1300,
+      "type": "call"
+    },
+    {
+      "source": 1502,
+      "target": 1724,
+      "type": "call"
+    },
+    {
+      "source": 1508,
+      "target": 32,
+      "type": "call"
+    },
+    {
+      "source": 1513,
+      "target": 1502,
+      "type": "branch"
+    },
+    {
+      "source": 1534,
+      "target": 1544,
+      "type": "branch"
+    },
+    {
+      "source": 1537,
+      "target": 1545,
+      "type": "branch"
+    },
+    {
+      "source": 1546,
+      "target": 1531,
+      "type": "branch"
+    },
+    {
+      "source": 1551,
+      "target": 1569,
+      "type": "branch"
+    },
+    {
+      "source": 1557,
+      "target": 3512,
+      "type": "call"
+    },
+    {
+      "source": 1563,
+      "target": 3512,
+      "type": "call"
+    },
+    {
+      "source": 1566,
+      "target": 1607,
+      "type": "jump"
+    },
+    {
+      "source": 3016,
+      "target": 3014,
+      "type": "branch"
+    },
+    {
+      "source": 3038,
+      "target": 3048,
+      "type": "call"
+    },
+    {
+      "source": 3043,
+      "target": 3048,
+      "type": "call"
+    },
+    {
+      "source": 3052,
+      "target": 3069,
+      "type": "branch"
+    },
+    {
+      "source": 3056,
+      "target": 3161,
+      "type": "call"
+    },
+    {
+      "source": 3060,
+      "target": 3065,
+      "type": "branch"
+    },
+    {
+      "source": 1724,
+      "target": 2038,
+      "type": "call"
+    },
+    {
+      "source": 1729,
+      "target": 2038,
+      "type": "call"
+    },
+    {
+      "source": 1734,
+      "target": 2038,
+      "type": "call"
+    },
+    {
+      "source": 1739,
+      "target": 2038,
+      "type": "call"
+    },
+    {
+      "source": 1746,
+      "target": 1818,
+      "type": "jump"
+    },
+    {
+      "source": 1572,
+      "target": 3560,
+      "type": "call"
+    },
+    {
+      "source": 1609,
+      "target": 24,
+      "type": "call"
+    },
+    {
+      "source": 1610,
+      "target": 1692,
+      "type": "call"
+    },
+    {
+      "source": 1616,
+      "target": 3512,
+      "type": "call"
+    },
+    {
+      "source": 1622,
+      "target": 3512,
+      "type": "call"
+    },
+    {
+      "source": 1628,
+      "target": 3443,
+      "type": "call"
+    },
+    {
+      "source": 1631,
+      "target": 3570,
+      "type": "call"
+    },
+    {
+      "source": 1638,
+      "target": 1650,
+      "type": "branch"
+    },
+    {
+      "source": 1641,
+      "target": 3339,
+      "type": "call"
+    },
+    {
+      "source": 1647,
+      "target": 1346,
+      "type": "jump"
+    },
+    {
+      "source": 3070,
+      "target": 3125,
+      "type": "branch"
+    },
+    {
+      "source": 3074,
+      "target": 3161,
+      "type": "call"
+    },
+    {
+      "source": 3083,
+      "target": 3217,
+      "type": "call"
+    },
+    {
+      "source": 3096,
+      "target": 3105,
+      "type": "branch"
+    },
+    {
+      "source": 3099,
+      "target": 3026,
+      "type": "call"
+    },
+    {
+      "source": 3102,
+      "target": 3108,
+      "type": "jump"
+    },
+    {
+      "source": 3579,
+      "target": 1312,
+      "type": "call"
+    },
+    {
+      "source": 3585,
+      "target": 3575,
+      "type": "branch"
+    },
+    {
+      "source": 3590,
+      "target": 3574,
+      "type": "branch"
+    },
+    {
+      "source": 3594,
+      "target": 3572,
+      "type": "branch"
+    },
+    {
+      "source": 3125,
+      "target": 3161,
+      "type": "call"
+    },
+    {
+      "source": 3105,
+      "target": 3037,
+      "type": "call"
+    },
+    {
+      "source": 3120,
+      "target": 3217,
+      "type": "call"
+    }
+  ],
+  "indexed_dispatch_signatures": []
+}

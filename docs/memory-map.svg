@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 910 674">
+<rect width="100%" height="100%" fill="#101820"/>
+<text x="26" y="44" font-family="monospace" font-size="22" fill="#e8eff4">CHECKMATE / 8080 memory map</text>
+<rect x="26" y="65" width="850" height="76" fill="#1c3b50" stroke="#557187" stroke-width="1"/>
+<text x="41" y="94" fill="#f5fafc" font-family="monospace" font-size="17">$0000-$03FF  checkmat.h</text>
+<text x="41" y="118" fill="#a5bfcd" font-family="monospace" font-size="13">f758599d6393398a6a8e6e7399dc1a3862604f65</text>
+<rect x="26" y="159" width="850" height="76" fill="#1c3b50" stroke="#557187" stroke-width="1"/>
+<text x="41" y="188" fill="#f5fafc" font-family="monospace" font-size="17">$0400-$07FF  checkmat.g</text>
+<text x="41" y="212" fill="#a5bfcd" font-family="monospace" font-size="13">484ff9bfb95166ba09f34c753a7908a73de3cc7d</text>
+<rect x="26" y="253" width="850" height="76" fill="#1c3b50" stroke="#557187" stroke-width="1"/>
+<text x="41" y="282" fill="#f5fafc" font-family="monospace" font-size="17">$0800-$0BFF  checkmat.f</text>
+<text x="41" y="306" fill="#a5bfcd" font-family="monospace" font-size="13">39e0cf502735819a7e1d933e3686945fcfae21af</text>
+<rect x="26" y="347" width="850" height="76" fill="#1c3b50" stroke="#557187" stroke-width="1"/>
+<text x="41" y="376" fill="#f5fafc" font-family="monospace" font-size="17">$0C00-$0FFF  checkmat.e</text>
+<text x="41" y="400" fill="#a5bfcd" font-family="monospace" font-size="13">453f95dd31968d439339c41e625481170437eb0f</text>
+<rect x="26" y="441" width="850" height="76" fill="#293643" stroke="#557187" stroke-width="1"/>
+<text x="41" y="470" fill="#f5fafc" font-family="monospace" font-size="17">$2000-$23FF  Work RAM (candidate board space)</text>
+<text x="41" y="494" fill="#a5bfcd" font-family="monospace" font-size="13">Hardware decode unverified</text>
+<rect x="26" y="535" width="850" height="76" fill="#293643" stroke="#557187" stroke-width="1"/>
+<text x="41" y="564" fill="#f5fafc" font-family="monospace" font-size="17">$2400-$3FFF  Display RAM (candidate board space)</text>
+<text x="41" y="588" fill="#a5bfcd" font-family="monospace" font-size="13">Check board schematics</text>
+</svg>
