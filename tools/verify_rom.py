@@ -9,7 +9,7 @@ with zipfile.ZipFile(ROOT/"roms"/"original"/archive) as z:
     original=[z.read(x) for x in names]
 assert all(len(x)==size for x in original)
 reference=b"".join(original)
-rebuilt=ROOT/"src"/"zout"/(game+".cim")
+rebuilt=ROOT/"roms"/"build"/(game+".bin")
 assert rebuilt.exists(),f"Missing assembled image: {rebuilt}"
 actual=rebuilt.read_bytes()
 assert len(actual)==len(reference),(len(actual),len(reference))
