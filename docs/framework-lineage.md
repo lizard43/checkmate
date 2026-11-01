@@ -6,6 +6,10 @@ No matching 1976–78 indexed handler-dispatch tail was
 found. This is NOT proof of no interpreter: alternate
 dispatch and native state tables remain research targets.
 
+## Checkmate's recovered native-service branch
+
+Checkmate uses `RST $18` (timer wait), `RST $20` (player-index wrap), and `RST $28` (indexed 16-bit pointer lookup). Its `$0DE8` helper decodes language-switch bits from input port `$02`, then selects a native address from `$0E3C/$0E44` and executes `JP (HL)` at `$0627/$089E`. Recovered resident paths are `$0628–$0646` and `$089F–$0994`. Alternative entries target the undumped `checkmat.d` language ROM at `$1000–$13FF` (MAME issue 1050). This is a native language selector, not a bytecode command dictionary. See [hard RE](checkmate-hard-re-20261031.md).
+
 ## Comparison
 
 | Runtime | Commands | Program representation |
