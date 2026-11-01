@@ -26,15 +26,15 @@ IRQ_TICK_ENTRY:
         LD B,$01  ; ROM $0013: 06 01
         JP IRQ_COMMON_INPUT_SCAN  ; ROM $0015: C3 2B 00
 ; Jump vector followed by packed high-bit-terminated MAT label bytes.
-START_MESSAGE_VECTOR:
+RST18_TIMER_VECTOR:
         JP RST18_WAIT_TIMER  ; ROM $0018: C3 7D 0D
         DB $08,$4D,$41,$54,$C5 ; ROM $001B entry-vector inline high-bit-terminated label
 ; Jump vector followed by packed high-bit-terminated COIN label bytes.
-COIN_MESSAGE_VECTOR:
+RST20_PLAYER_INDEX_VECTOR:
         JP RST20_WRAP_PLAYER_INDEX  ; ROM $0020: C3 A8 0C
         DB $08,$43,$4F,$49,$CE ; ROM $0023 entry-vector inline high-bit-terminated label
 ; Direct entry to game message routine.
-GAME_MESSAGE_VECTOR:
+RST28_LOOKUP_VECTOR:
         JP RST28_INDEXED_LOOKUP  ; ROM $0028: C3 99 0C
 ; Shared IRQ body: sample port 03, decrement timers, capture four input nibbles.
 IRQ_COMMON_INPUT_SCAN:
@@ -42,7 +42,7 @@ IRQ_COMMON_INPUT_SCAN:
         CALL SAMPLE_COIN_EDGE  ; ROM $002C: CD 7F 00
         LD A,B  ; ROM $002F: 78
         RRCA  ; ROM $0030: 0F
-        JP NC,$0079  ; ROM $0031: D2 79 00
+        JP NC,IRQ_RESTORE_REGISTERS  ; ROM $0031: D2 79 00
         LD HL,$2003  ; ROM $0034: 21 03 20
         CALL DEC_NONZERO_TIMER  ; ROM $0037: CD 92 00
         LD HL,$21BE  ; ROM $003A: 21 BE 21
@@ -51,7 +51,7 @@ IRQ_COMMON_INPUT_SCAN:
         CALL DEC_NONZERO_TIMER  ; ROM $0041: CD 92 00
         IN A,($00)  ; ROM $0044: DB 00
         AND $0F  ; ROM $0046: E6 0F
-        JP Z,$0053  ; ROM $0048: CA 53 00
+        JP Z,FLOW_0053  ; ROM $0048: CA 53 00
         LD ($21C2),A  ; ROM $004B: 32 C2 21
         LD A,$01  ; ROM $004E: 3E 01
         LD ($21C1),A  ; ROM $0050: 32 C1 21
@@ -62,12 +62,12 @@ FLOW_0053:
         RRCA  ; ROM $0057: 0F
         RRCA  ; ROM $0058: 0F
         AND $0F  ; ROM $0059: E6 0F
-        JP Z,$0061  ; ROM $005B: CA 61 00
+        JP Z,FLOW_0061  ; ROM $005B: CA 61 00
         LD ($21CA),A  ; ROM $005E: 32 CA 21
 FLOW_0061:
         IN A,($01)  ; ROM $0061: DB 01
         AND $0F  ; ROM $0063: E6 0F
-        JP Z,$006B  ; ROM $0065: CA 6B 00
+        JP Z,FLOW_006B  ; ROM $0065: CA 6B 00
         LD ($21D2),A  ; ROM $0068: 32 D2 21
 FLOW_006B:
         IN A,($01)  ; ROM $006B: DB 01
@@ -76,7 +76,7 @@ FLOW_006B:
         RRCA  ; ROM $006F: 0F
         RRCA  ; ROM $0070: 0F
         AND $0F  ; ROM $0071: E6 0F
-        JP Z,$0079  ; ROM $0073: CA 79 00
+        JP Z,IRQ_RESTORE_REGISTERS  ; ROM $0073: CA 79 00
         LD ($21DA),A  ; ROM $0076: 32 DA 21
 ; Restore 8080 registers, re-enable interrupts and return.
 IRQ_RESTORE_REGISTERS:
@@ -113,7 +113,7 @@ DEC_NONZERO_TIMER:
 BOOT_ROM_RAM_DIAGNOSTIC:
         IN A,($02)  ; ROM $0097: DB 02
         AND $80  ; ROM $0099: E6 80
-        JP Z,$04F9  ; ROM $009B: CA F9 04
+        JP Z,BOOT_GAME_INIT  ; ROM $009B: CA F9 04
         LD B,$01  ; ROM $009E: 06 01
         LD DE,$0000  ; ROM $00A0: 11 00 00
 ; Begin RAM pattern pass with pointer HL at 2000.
@@ -125,12 +125,12 @@ DIAG_RAM_FORWARD_SCAN:
         LD (HL),B  ; ROM $00A8: 70
         LD A,(HL)  ; ROM $00A9: 7E
         XOR B  ; ROM $00AA: A8
-        JP Z,$00BD  ; ROM $00AB: CA BD 00
+        JP Z,FLOW_00BD  ; ROM $00AB: CA BD 00
         LD C,A  ; ROM $00AE: 4F
         LD A,L  ; ROM $00AF: 7D
         AND $01  ; ROM $00B0: E6 01
         LD A,C  ; ROM $00B2: 79
-        JP NZ,$00BB  ; ROM $00B3: C2 BB 00
+        JP NZ,FLOW_00BB  ; ROM $00B3: C2 BB 00
         OR D  ; ROM $00B6: B2
         LD D,A  ; ROM $00B7: 57
         JP FLOW_00BD  ; ROM $00B8: C3 BD 00
@@ -141,22 +141,22 @@ FLOW_00BD:
         INC HL  ; ROM $00BD: 23
         LD A,H  ; ROM $00BE: 7C
         CP $40  ; ROM $00BF: FE 40
-        JP NZ,$00A6  ; ROM $00C1: C2 A6 00
+        JP NZ,DIAG_RAM_FORWARD_SCAN  ; ROM $00C1: C2 A6 00
 ; Reverse RAM sweep; accumulate changed bits in D/E.
 DIAG_RAM_REVERSE_SCAN:
         OUT ($02),A  ; ROM $00C4: D3 02
         DEC HL  ; ROM $00C6: 2B
         LD A,H  ; ROM $00C7: 7C
         CP $1F  ; ROM $00C8: FE 1F
-        JP Z,$00FA  ; ROM $00CA: CA FA 00
+        JP Z,DIAG_RAM_FINAL_SCAN  ; ROM $00CA: CA FA 00
         LD A,(HL)  ; ROM $00CD: 7E
         XOR B  ; ROM $00CE: A8
-        JP Z,$00E1  ; ROM $00CF: CA E1 00
+        JP Z,FLOW_00E1  ; ROM $00CF: CA E1 00
         LD C,A  ; ROM $00D2: 4F
         LD A,L  ; ROM $00D3: 7D
         AND $01  ; ROM $00D4: E6 01
         LD A,C  ; ROM $00D6: 79
-        JP NZ,$00DF  ; ROM $00D7: C2 DF 00
+        JP NZ,FLOW_00DF  ; ROM $00D7: C2 DF 00
         OR D  ; ROM $00DA: B2
         LD D,A  ; ROM $00DB: 57
         JP FLOW_00E1  ; ROM $00DC: C3 E1 00
@@ -168,12 +168,12 @@ FLOW_00E1:
         CPL  ; ROM $00E2: 2F
         LD (HL),A  ; ROM $00E3: 77
         XOR (HL)  ; ROM $00E4: AE
-        JP Z,$00C4  ; ROM $00E5: CA C4 00
+        JP Z,DIAG_RAM_REVERSE_SCAN  ; ROM $00E5: CA C4 00
         LD C,A  ; ROM $00E8: 4F
         LD A,L  ; ROM $00E9: 7D
         AND $01  ; ROM $00EA: E6 01
         LD A,C  ; ROM $00EC: 79
-        JP NZ,$00F5  ; ROM $00ED: C2 F5 00
+        JP NZ,FLOW_00F5  ; ROM $00ED: C2 F5 00
         OR D  ; ROM $00F0: B2
         LD D,A  ; ROM $00F1: 57
         JP FLOW_00F7  ; ROM $00F2: C3 F7 00
@@ -188,16 +188,16 @@ DIAG_RAM_FINAL_SCAN:
         INC HL  ; ROM $00FC: 23
         LD A,H  ; ROM $00FD: 7C
         CP $40  ; ROM $00FE: FE 40
-        JP Z,$011D  ; ROM $0100: CA 1D 01
+        JP Z,DIAG_TEST_RESULT  ; ROM $0100: CA 1D 01
         LD A,B  ; ROM $0103: 78
         CPL  ; ROM $0104: 2F
         XOR (HL)  ; ROM $0105: AE
-        JP Z,$0118  ; ROM $0106: CA 18 01
+        JP Z,FLOW_0118  ; ROM $0106: CA 18 01
         LD C,A  ; ROM $0109: 4F
         LD A,L  ; ROM $010A: 7D
         AND $01  ; ROM $010B: E6 01
         LD A,C  ; ROM $010D: 79
-        JP NZ,$0116  ; ROM $010E: C2 16 01
+        JP NZ,FLOW_0116  ; ROM $010E: C2 16 01
         OR D  ; ROM $0111: B2
         LD D,A  ; ROM $0112: 57
         JP FLOW_0118  ; ROM $0113: C3 18 01
@@ -213,10 +213,10 @@ DIAG_TEST_RESULT:
         LD A,B  ; ROM $011D: 78
         RLCA  ; ROM $011E: 07
         LD B,A  ; ROM $011F: 47
-        JP NC,$00A3  ; ROM $0120: D2 A3 00
+        JP NC,DIAG_RAM_PASS_BEGIN  ; ROM $0120: D2 A3 00
         LD A,D  ; ROM $0123: 7A
         OR E  ; ROM $0124: B3
-        JP Z,$014C  ; ROM $0125: CA 4C 01
+        JP Z,DIAG_ROM_CHECKSUM  ; ROM $0125: CA 4C 01
         EX DE,HL  ; ROM $0128: EB
         LD SP,HL  ; ROM $0129: F9
         LD DE,$2000  ; ROM $012A: 11 00 20
@@ -228,7 +228,7 @@ FLOW_012F:
 FLOW_0135:
         XOR A  ; ROM $0135: AF
         ADD HL,HL  ; ROM $0136: 29
-        JP C,$013B  ; ROM $0137: DA 3B 01
+        JP C,FLOW_013B  ; ROM $0137: DA 3B 01
         CPL  ; ROM $013A: 2F
 FLOW_013B:
         LD (DE),A  ; ROM $013B: 12
@@ -237,9 +237,9 @@ FLOW_013B:
         LD (DE),A  ; ROM $013F: 12
         INC DE  ; ROM $0140: 13
         DEC C  ; ROM $0141: 0D
-        JP NZ,$0135  ; ROM $0142: C2 35 01
+        JP NZ,FLOW_0135  ; ROM $0142: C2 35 01
         DEC B  ; ROM $0145: 05
-        JP NZ,$012F  ; ROM $0146: C2 2F 01
+        JP NZ,FLOW_012F  ; ROM $0146: C2 2F 01
         JP DIAG_FAILURE_HALT  ; ROM $0149: C3 85 01
 ; Initialize stack and checksum passes across four 1 KB ROM banks.
 DIAG_ROM_CHECKSUM:
@@ -258,11 +258,11 @@ DIAG_ROM_SUM_LOOP:
         OUT ($02),A  ; ROM $015E: D3 02
         INC HL  ; ROM $0160: 23
         DEC C  ; ROM $0161: 0D
-        JP NZ,$015D  ; ROM $0162: C2 5D 01
+        JP NZ,DIAG_ROM_SUM_LOOP  ; ROM $0162: C2 5D 01
         DEC B  ; ROM $0165: 05
-        JP NZ,$015D  ; ROM $0166: C2 5D 01
+        JP NZ,DIAG_ROM_SUM_LOOP  ; ROM $0166: C2 5D 01
         INC A  ; ROM $0169: 3C
-        JP Z,$0177  ; ROM $016A: CA 77 01
+        JP Z,FLOW_0177  ; ROM $016A: CA 77 01
         LD A,(DE)  ; ROM $016D: 1A
         EX (SP),HL  ; ROM $016E: E3
         EX DE,HL  ; ROM $016F: EB
@@ -275,11 +275,11 @@ FLOW_0177:
         INC DE  ; ROM $0177: 13
         LD A,H  ; ROM $0178: 7C
         CP $10  ; ROM $0179: FE 10
-        JP NZ,$0159  ; ROM $017B: C2 59 01
+        JP NZ,DIAG_ROM_BANK_LOOP  ; ROM $017B: C2 59 01
         POP HL  ; ROM $017E: E1
         LD A,L  ; ROM $017F: 7D
         CP $0C  ; ROM $0180: FE 0C
-        JP Z,$0000  ; ROM $0182: CA 00 00
+        JP Z,RESET_ENTRY  ; ROM $0182: CA 00 00
 ; Failure loop: repeated output to port 02.
 DIAG_FAILURE_HALT:
         OUT ($02),A  ; ROM $0185: D3 02
@@ -339,7 +339,7 @@ DIAG_FAILURE_HALT:
 ADVANCE_GLYPH_NIBBLE:
         LD A,(HL)  ; ROM $03E5: 7E
         AND $F0  ; ROM $03E6: E6 F0
-        JP NZ,$03F4  ; ROM $03E8: C2 F4 03
+        JP NZ,FLOW_03F4  ; ROM $03E8: C2 F4 03
         LD A,$40  ; ROM $03EB: 3E 40
         CALL ADVANCE_DISPLAY_CURSOR  ; ROM $03ED: CD 00 04
         JP FLOW_03FB  ; ROM $03F0: C3 FB 03
@@ -364,7 +364,7 @@ ADVANCE_DISPLAY_CURSOR:
         AND $7F  ; ROM $0400: E6 7F
         CP $30  ; ROM $0402: FE 30
         LD B,$00  ; ROM $0404: 06 00
-        JP NC,$041D  ; ROM $0406: D2 1D 04
+        JP NC,FLOW_041D  ; ROM $0406: D2 1D 04
         EX DE,HL  ; ROM $0409: EB
         LD BC,$01E0  ; ROM $040A: 01 E0 01
 ; Advance display cursor across a 32-byte row boundary.
@@ -373,12 +373,12 @@ ADVANCE_DISPLAY_ROW:
         INC HL  ; ROM $040E: 23
         LD A,L  ; ROM $040F: 7D
         AND $1F  ; ROM $0410: E6 1F
-        JP NZ,$0416  ; ROM $0412: C2 16 04
+        JP NZ,FLOW_0416  ; ROM $0412: C2 16 04
         ADD HL,BC  ; ROM $0415: 09
 FLOW_0416:
         POP AF  ; ROM $0416: F1
         DEC A  ; ROM $0417: 3D
-        JP NZ,$040D  ; ROM $0418: C2 0D 04
+        JP NZ,ADVANCE_DISPLAY_ROW  ; ROM $0418: C2 0D 04
         EX DE,HL  ; ROM $041B: EB
         RET  ; ROM $041C: C9
 FLOW_041D:
@@ -397,7 +397,7 @@ FLOW_0426:
         ADD HL,BC  ; ROM $042E: 09
         POP BC  ; ROM $042F: C1
         DEC B  ; ROM $0430: 05
-        JP NZ,$0426  ; ROM $0431: C2 26 04
+        JP NZ,FLOW_0426  ; ROM $0431: C2 26 04
         POP DE  ; ROM $0434: D1
         INC DE  ; ROM $0435: 13
         POP HL  ; ROM $0436: E1
@@ -423,7 +423,7 @@ SUBROUTINE_044C:
         AND $7F  ; ROM $044C: E6 7F
         PUSH HL  ; ROM $044E: E5
         CP $30  ; ROM $044F: FE 30
-        JP NC,$045B  ; ROM $0451: D2 5B 04
+        JP NC,FLOW_045B  ; ROM $0451: D2 5B 04
         LD L,A  ; ROM $0454: 6F
         LD H,$00  ; ROM $0455: 26 00
         ADD HL,DE  ; ROM $0457: 19
@@ -445,12 +445,12 @@ FLOW_046A:
         LD E,A  ; ROM $046A: 5F
         LD D,B  ; ROM $046B: 50
         RLCA  ; ROM $046C: 07
-        JP NC,$0472  ; ROM $046D: D2 72 04
+        JP NC,FLOW_0472  ; ROM $046D: D2 72 04
         LD D,$F0  ; ROM $0470: 16 F0
 FLOW_0472:
         RLCA  ; ROM $0472: 07
         LD A,B  ; ROM $0473: 78
-        JP NC,$0479  ; ROM $0474: D2 79 04
+        JP NC,FLOW_0479  ; ROM $0474: D2 79 04
         LD A,$0F  ; ROM $0477: 3E 0F
 FLOW_0479:
         OR D  ; ROM $0479: B2
@@ -460,7 +460,7 @@ FLOW_0479:
         RLCA  ; ROM $047D: 07
         RLCA  ; ROM $047E: 07
         DEC C  ; ROM $047F: 0D
-        JP NZ,$046A  ; ROM $0480: C2 6A 04
+        JP NZ,FLOW_046A  ; ROM $0480: C2 6A 04
         EX DE,HL  ; ROM $0483: EB
         INC DE  ; ROM $0484: 13
         POP HL  ; ROM $0485: E1
@@ -475,17 +475,17 @@ FLOW_048C:
         LD (HL),A  ; ROM $048E: 77
         INC HL  ; ROM $048F: 23
         DEC B  ; ROM $0490: 05
-        JP NZ,$048C  ; ROM $0491: C2 8C 04
+        JP NZ,FLOW_048C  ; ROM $0491: C2 8C 04
         POP HL  ; ROM $0494: E1
         LD DE,$0020  ; ROM $0495: 11 20 00
         ADD HL,DE  ; ROM $0498: 19
         POP DE  ; ROM $0499: D1
         DEC C  ; ROM $049A: 0D
-        JP NZ,$0488  ; ROM $049B: C2 88 04
+        JP NZ,FLOW_0488  ; ROM $049B: C2 88 04
         POP DE  ; ROM $049E: D1
         POP BC  ; ROM $049F: C1
         DEC B  ; ROM $04A0: 05
-        JP NZ,$045F  ; ROM $04A1: C2 5F 04
+        JP NZ,FLOW_045F  ; ROM $04A1: C2 5F 04
         POP DE  ; ROM $04A4: D1
         INC DE  ; ROM $04A5: 13
         INC DE  ; ROM $04A6: 13
@@ -517,16 +517,16 @@ FLOW_0515:
         LD (HL),A  ; ROM $0515: 77
         INC HL  ; ROM $0516: 23
         DEC C  ; ROM $0517: 0D
-        JP NZ,$0515  ; ROM $0518: C2 15 05
+        JP NZ,FLOW_0515  ; ROM $0518: C2 15 05
         DEC B  ; ROM $051B: 05
-        JP NZ,$0515  ; ROM $051C: C2 15 05
+        JP NZ,FLOW_0515  ; ROM $051C: C2 15 05
         RET  ; ROM $051F: C9
 SUBROUTINE_0520:
         OUT ($02),A  ; ROM $0520: D3 02
         LD HL,$2001  ; ROM $0522: 21 01 20
         LD A,(HL)  ; ROM $0525: 7E
         AND A  ; ROM $0526: A7
-        JP Z,$054E  ; ROM $0527: CA 4E 05
+        JP Z,FLOW_054E  ; ROM $0527: CA 4E 05
         LD (HL),$00  ; ROM $052A: 36 00
         INC HL  ; ROM $052C: 23
         INC (HL)  ; ROM $052D: 34
@@ -547,11 +547,11 @@ FLOW_0548:
 FLOW_054E:
         LD A,($2003)  ; ROM $054E: 3A 03 20
         AND A  ; ROM $0551: A7
-        JP NZ,$056E  ; ROM $0552: C2 6E 05
+        JP NZ,FLOW_056E  ; ROM $0552: C2 6E 05
         LD HL,($2004)  ; ROM $0555: 2A 04 20
         LD A,(HL)  ; ROM $0558: 7E
         AND A  ; ROM $0559: A7
-        JP Z,$056B  ; ROM $055A: CA 6B 05
+        JP Z,FLOW_056B  ; ROM $055A: CA 6B 05
         LD ($2003),A  ; ROM $055D: 32 03 20
         INC HL  ; ROM $0560: 23
         LD A,(HL)  ; ROM $0561: 7E
@@ -574,7 +574,7 @@ FLOW_056E:
 FLOW_057D:
         INC E  ; ROM $057D: 1C
         RRCA  ; ROM $057E: 0F
-        JP NC,$057D  ; ROM $057F: D2 7D 05
+        JP NC,FLOW_057D  ; ROM $057F: D2 7D 05
         IN A,($02)  ; ROM $0582: DB 02
         AND $01  ; ROM $0584: E6 01
         LD D,A  ; ROM $0586: 57
@@ -591,7 +591,7 @@ FLOW_057D:
         LD (HL),A  ; ROM $0597: 77
         LD A,E  ; ROM $0598: 7B
         CP $01  ; ROM $0599: FE 01
-        JP NZ,$05A7  ; ROM $059B: C2 A7 05
+        JP NZ,FLOW_05A7  ; ROM $059B: C2 A7 05
         LD ($2009),A  ; ROM $059E: 32 09 20
         LD A,$04  ; ROM $05A1: 3E 04
         LD E,A  ; ROM $05A3: 5F
@@ -626,7 +626,7 @@ FLOW_05DE:
         RST $20  ; ROM $05E4: E7
         LD HL,$2008  ; ROM $05E5: 21 08 20
         DEC (HL)  ; ROM $05E8: 35
-        JP NZ,$05DE  ; ROM $05E9: C2 DE 05
+        JP NZ,FLOW_05DE  ; ROM $05E9: C2 DE 05
         XOR A  ; ROM $05EC: AF
         LD ($2006),A  ; ROM $05ED: 32 06 20
         LD HL,$2027  ; ROM $05F0: 21 27 20
@@ -638,8 +638,8 @@ FLOW_05FB:
         LD A,(HL)  ; ROM $05FB: 7E
         INC HL  ; ROM $05FC: 23
         CP C  ; ROM $05FD: B9
-        JP Z,$0608  ; ROM $05FE: CA 08 06
-        JP C,$0609  ; ROM $0601: DA 09 06
+        JP Z,FLOW_0608  ; ROM $05FE: CA 08 06
+        JP C,FLOW_0609  ; ROM $0601: DA 09 06
         LD C,A  ; ROM $0604: 4F
         LD E,B  ; ROM $0605: 58
         LD D,$FF  ; ROM $0606: 16 FF
@@ -647,10 +647,10 @@ FLOW_0608:
         INC D  ; ROM $0608: 14
 FLOW_0609:
         DEC B  ; ROM $0609: 05
-        JP NZ,$05FB  ; ROM $060A: C2 FB 05
+        JP NZ,FLOW_05FB  ; ROM $060A: C2 FB 05
         LD A,D  ; ROM $060D: 7A
         AND A  ; ROM $060E: A7
-        JP Z,$0621  ; ROM $060F: CA 21 06
+        JP Z,FLOW_0621  ; ROM $060F: CA 21 06
         LD DE,$0104  ; ROM $0612: 11 04 01
         CALL SUBROUTINE_0DB8  ; ROM $0615: CD B8 0D
         LD DE,$0305  ; ROM $0618: 11 05 03
@@ -689,7 +689,7 @@ FLOW_0647:
         CALL SUBROUTINE_0DF2  ; ROM $065F: CD F2 0D
         LD A,($2002)  ; ROM $0662: 3A 02 20
         AND A  ; ROM $0665: A7
-        JP Z,$0672  ; ROM $0666: CA 72 06
+        JP Z,FLOW_0672  ; ROM $0666: CA 72 06
         CALL SUBROUTINE_0D0B  ; ROM $0669: CD 0B 0D
         LD DE,$0001  ; ROM $066C: 11 01 00
         JP FLOW_0542  ; ROM $066F: C3 42 05
@@ -718,10 +718,10 @@ SUBROUTINE_06A5:
         LD DE,$0203  ; ROM $06A5: 11 03 02
         IN A,($02)  ; ROM $06A8: DB 02
         AND $01  ; ROM $06AA: E6 01
-        JP NZ,$0DC6  ; ROM $06AC: C2 C6 0D
+        JP NZ,SUBROUTINE_0DC6  ; ROM $06AC: C2 C6 0D
         LD A,($2002)  ; ROM $06AF: 3A 02 20
         CP $02  ; ROM $06B2: FE 02
-        JP NC,$0DC6  ; ROM $06B4: D2 C6 0D
+        JP NC,SUBROUTINE_0DC6  ; ROM $06B4: D2 C6 0D
         LD E,$02  ; ROM $06B7: 1E 02
         JP SUBROUTINE_0DC6  ; ROM $06B9: C3 C6 0D
 SUBROUTINE_06BC:
@@ -745,15 +745,15 @@ FLOW_06DC:
         EX DE,HL  ; ROM $06DF: EB
         LD A,(DE)  ; ROM $06E0: 1A
         INC A  ; ROM $06E1: 3C
-        JP NZ,$06F6  ; ROM $06E2: C2 F6 06
+        JP NZ,FLOW_06F6  ; ROM $06E2: C2 F6 06
         CALL SUBROUTINE_07F6  ; ROM $06E5: CD F6 07
         LD A,(HL)  ; ROM $06E8: 7E
         CP $AA  ; ROM $06E9: FE AA
-        JP NZ,$06F6  ; ROM $06EB: C2 F6 06
+        JP NZ,FLOW_06F6  ; ROM $06EB: C2 F6 06
         CALL SUBROUTINE_07F6  ; ROM $06EE: CD F6 07
         LD A,(HL)  ; ROM $06F1: 7E
         INC A  ; ROM $06F2: 3C
-        JP Z,$0708  ; ROM $06F3: CA 08 07
+        JP Z,FLOW_0708  ; ROM $06F3: CA 08 07
 FLOW_06F6:
         EX DE,HL  ; ROM $06F6: EB
         LD ($202B),HL  ; ROM $06F7: 22 2B 20
@@ -761,18 +761,18 @@ FLOW_06F6:
         CALL SUBROUTINE_0520  ; ROM $06FB: CD 20 05
         POP BC  ; ROM $06FE: C1
         DEC C  ; ROM $06FF: 0D
-        JP NZ,$06DC  ; ROM $0700: C2 DC 06
+        JP NZ,FLOW_06DC  ; ROM $0700: C2 DC 06
         DEC B  ; ROM $0703: 05
-        JP NZ,$06DC  ; ROM $0704: C2 DC 06
+        JP NZ,FLOW_06DC  ; ROM $0704: C2 DC 06
         RET  ; ROM $0707: C9
 FLOW_0708:
         CALL SUBROUTINE_07F6  ; ROM $0708: CD F6 07
         LD A,($2007)  ; ROM $070B: 3A 07 20
         CP (HL)  ; ROM $070E: BE
-        JP C,$06F6  ; ROM $070F: DA F6 06
+        JP C,FLOW_06F6  ; ROM $070F: DA F6 06
         LD A,(HL)  ; ROM $0712: 7E
         AND A  ; ROM $0713: A7
-        JP Z,$06F6  ; ROM $0714: CA F6 06
+        JP Z,FLOW_06F6  ; ROM $0714: CA F6 06
         LD ($2010),A  ; ROM $0717: 32 10 20
 FLOW_071A:
         CALL SUBROUTINE_0995  ; ROM $071A: CD 95 09
@@ -782,7 +782,7 @@ FLOW_071A:
         LD ($2012),A  ; ROM $0726: 32 12 20
         LD A,($2006)  ; ROM $0729: 3A 06 20
         AND A  ; ROM $072C: A7
-        JP Z,$0756  ; ROM $072D: CA 56 07
+        JP Z,FLOW_0756  ; ROM $072D: CA 56 07
         LD DE,$0FDC  ; ROM $0730: 11 DC 0F
         CALL SUBROUTINE_0D73  ; ROM $0733: CD 73 0D
         LD HL,$2017  ; ROM $0736: 21 17 20
@@ -796,7 +796,7 @@ FLOW_073B:
         RST $18  ; ROM $0746: DF
         LD HL,$2017  ; ROM $0747: 21 17 20
         DEC (HL)  ; ROM $074A: 35
-        JP NZ,$073B  ; ROM $074B: C2 3B 07
+        JP NZ,FLOW_073B  ; ROM $074B: C2 3B 07
         LD DE,$2F8E  ; ROM $074E: 11 8E 2F
         LD A,$40  ; ROM $0751: 3E 40
         CALL SUBROUTINE_044C  ; ROM $0753: CD 4C 04
@@ -804,15 +804,15 @@ FLOW_0756:
         CALL SUBROUTINE_0AEE  ; ROM $0756: CD EE 0A
         LD A,($2006)  ; ROM $0759: 3A 06 20
         AND A  ; ROM $075C: A7
-        JP Z,$076B  ; ROM $075D: CA 6B 07
+        JP Z,FLOW_076B  ; ROM $075D: CA 6B 07
         LD A,($2009)  ; ROM $0760: 3A 09 20
         DEC A  ; ROM $0763: 3D
-        JP NZ,$0770  ; ROM $0764: C2 70 07
+        JP NZ,FLOW_0770  ; ROM $0764: C2 70 07
         LD A,($21C0)  ; ROM $0767: 3A C0 21
         AND A  ; ROM $076A: A7
 FLOW_076B:
         LD A,$02  ; ROM $076B: 3E 02
-        JP Z,$0776  ; ROM $076D: CA 76 07
+        JP Z,FLOW_0776  ; ROM $076D: CA 76 07
 FLOW_0770:
         LD HL,$2012  ; ROM $0770: 21 12 20
         LD A,$0B  ; ROM $0773: 3E 0B
@@ -824,7 +824,7 @@ FLOW_0779:
         RST $28  ; ROM $077C: EF
         LD A,(HL)  ; ROM $077D: 7E
         AND A  ; ROM $077E: A7
-        JP NZ,$0789  ; ROM $077F: C2 89 07
+        JP NZ,FLOW_0789  ; ROM $077F: C2 89 07
         LD HL,$2011  ; ROM $0782: 21 11 20
         RST $20  ; ROM $0785: E7
         JP FLOW_0779  ; ROM $0786: C3 79 07
@@ -832,7 +832,7 @@ FLOW_0789:
         PUSH HL  ; ROM $0789: E5
         CALL SUBROUTINE_0B3C  ; ROM $078A: CD 3C 0B
         AND A  ; ROM $078D: A7
-        JP NZ,$0796  ; ROM $078E: C2 96 07
+        JP NZ,FLOW_0796  ; ROM $078E: C2 96 07
         LD A,$04  ; ROM $0791: 3E 04
         CALL SUBROUTINE_0CB4  ; ROM $0793: CD B4 0C
 FLOW_0796:
@@ -844,7 +844,7 @@ FLOW_0796:
         CALL SUBROUTINE_080F  ; ROM $079D: CD 0F 08
         LD A,($2012)  ; ROM $07A0: 3A 12 20
         CP $02  ; ROM $07A3: FE 02
-        JP NC,$07AC  ; ROM $07A5: D2 AC 07
+        JP NC,FLOW_07AC  ; ROM $07A5: D2 AC 07
         LD A,$78  ; ROM $07A8: 3E 78
         RST $18  ; ROM $07AA: DF
         RET  ; ROM $07AB: C9
@@ -856,16 +856,16 @@ SUBROUTINE_07B3:
         LD B,A  ; ROM $07B3: 47
         LD A,($2006)  ; ROM $07B4: 3A 06 20
         AND A  ; ROM $07B7: A7
-        JP Z,$07D2  ; ROM $07B8: CA D2 07
+        JP Z,FLOW_07D2  ; ROM $07B8: CA D2 07
         CALL SUBROUTINE_07E3  ; ROM $07BB: CD E3 07
-        JP P,$07C3  ; ROM $07BE: F2 C3 07
+        JP P,FLOW_07C3  ; ROM $07BE: F2 C3 07
         LD (HL),$00  ; ROM $07C1: 36 00
 FLOW_07C3:
         LD A,B  ; ROM $07C3: 78
         DEC A  ; ROM $07C4: 3D
 FLOW_07C5:
         DEC C  ; ROM $07C5: 0D
-        JP M,$07CE  ; ROM $07C6: FA CE 07
+        JP M,FLOW_07CE  ; ROM $07C6: FA CE 07
         RLCA  ; ROM $07C9: 07
         RLCA  ; ROM $07CA: 07
         JP FLOW_07C5  ; ROM $07CB: C3 C5 07
@@ -879,7 +879,7 @@ FLOW_07D2:
         LD A,(HL)  ; ROM $07D5: 7E
 FLOW_07D6:
         DEC C  ; ROM $07D6: 0D
-        JP M,$07DF  ; ROM $07D7: FA DF 07
+        JP M,FLOW_07DF  ; ROM $07D7: FA DF 07
         RRCA  ; ROM $07DA: 0F
         RRCA  ; ROM $07DB: 0F
         JP FLOW_07D6  ; ROM $07DC: C3 D6 07
@@ -890,12 +890,12 @@ FLOW_07DF:
 SUBROUTINE_07E3:
         LD HL,$21BD  ; ROM $07E3: 21 BD 21
         DEC (HL)  ; ROM $07E6: 35
-        JP P,$07EC  ; ROM $07E7: F2 EC 07
+        JP P,FLOW_07EC  ; ROM $07E7: F2 EC 07
         LD (HL),$03  ; ROM $07EA: 36 03
 FLOW_07EC:
         LD C,(HL)  ; ROM $07EC: 4E
         PUSH AF  ; ROM $07ED: F5
-        CALL M,$07F6  ; ROM $07EE: FC F6 07
+        CALL M,SUBROUTINE_07F6  ; ROM $07EE: FC F6 07
         POP AF  ; ROM $07F1: F1
         LD HL,($202B)  ; ROM $07F2: 2A 2B 20
         RET  ; ROM $07F5: C9
@@ -912,7 +912,7 @@ SUBROUTINE_07F6:
         DB $08 ; ROM $0800 preserved non-executable data / unresolved structure
         LD A,L  ; ROM $0801: 7D
         CP $BD  ; ROM $0802: FE BD
-        JP NZ,$080A  ; ROM $0804: C2 0A 08
+        JP NZ,FLOW_080A  ; ROM $0804: C2 0A 08
         LD HL,$202D  ; ROM $0807: 21 2D 20
 FLOW_080A:
         LD ($202B),HL  ; ROM $080A: 22 2B 20
@@ -929,7 +929,7 @@ SUBROUTINE_080F:
         LD B,(HL)  ; ROM $081A: 46
         LD A,C  ; ROM $081B: 79
         OR B  ; ROM $081C: B0
-        JP Z,$0826  ; ROM $081D: CA 26 08
+        JP Z,FLOW_0826  ; ROM $081D: CA 26 08
         LD HL,$0F5C  ; ROM $0820: 21 5C 0F
         CALL SUBROUTINE_0D33  ; ROM $0823: CD 33 0D
 FLOW_0826:
@@ -965,7 +965,7 @@ FLOW_0826:
         INC HL  ; ROM $084F: 23
         LD (HL),B  ; ROM $0850: 70
         CALL SUBROUTINE_0C59  ; ROM $0851: CD 59 0C
-        JP NZ,$088C  ; ROM $0854: C2 8C 08
+        JP NZ,FLOW_088C  ; ROM $0854: C2 8C 08
         LD A,($2011)  ; ROM $0857: 3A 11 20
         CALL SUBROUTINE_0C3B  ; ROM $085A: CD 3B 0C
         LD A,($2018)  ; ROM $085D: 3A 18 20
@@ -1025,7 +1025,7 @@ ROUND_WINNER_TEXT_LOOP:
         LD A,(DE)  ; ROM $08D4: 1A
         INC DE  ; ROM $08D5: 13
         AND A  ; ROM $08D6: A7
-        JP Z,$08E6  ; ROM $08D7: CA E6 08
+        JP Z,ROUND_WINNER_TEXT_END  ; ROM $08D7: CA E6 08
         PUSH AF  ; ROM $08DA: F5
         LD HL,($2015)  ; ROM $08DB: 2A 15 20
         CALL SUBROUTINE_0D39  ; ROM $08DE: CD 39 0D
@@ -1040,7 +1040,7 @@ ROUND_WINNER_TEXT_END:
         LD (HL),$00  ; ROM $08F2: 36 00
         LD A,($2006)  ; ROM $08F4: 3A 06 20
         AND A  ; ROM $08F7: A7
-        JP Z,$0926  ; ROM $08F8: CA 26 09
+        JP Z,ROUND_PLAYER_COUNT_LOOP  ; ROM $08F8: CA 26 09
         LD A,($2011)  ; ROM $08FB: 3A 11 20
         PUSH AF  ; ROM $08FE: F5
         LD A,($2007)  ; ROM $08FF: 3A 07 20
@@ -1050,7 +1050,7 @@ ROUND_SCORE_UPDATE_LOOP:
         RST $28  ; ROM $0908: EF
         LD A,(HL)  ; ROM $0909: 7E
         AND A  ; ROM $090A: A7
-        JP Z,$091B  ; ROM $090B: CA 1B 09
+        JP Z,ROUND_SCORE_UPDATE_DONE  ; ROM $090B: CA 1B 09
         LD HL,$2026  ; ROM $090E: 21 26 20
         CALL SUBROUTINE_0C8E  ; ROM $0911: CD 8E 0C
         LD A,(HL)  ; ROM $0914: 7E
@@ -1061,7 +1061,7 @@ ROUND_SCORE_UPDATE_LOOP:
 ROUND_SCORE_UPDATE_DONE:
         LD HL,$2011  ; ROM $091B: 21 11 20
         DEC (HL)  ; ROM $091E: 35
-        JP NZ,$0905  ; ROM $091F: C2 05 09
+        JP NZ,ROUND_SCORE_UPDATE_LOOP  ; ROM $091F: C2 05 09
         POP AF  ; ROM $0922: F1
         LD ($2011),A  ; ROM $0923: 32 11 20
 ROUND_PLAYER_COUNT_LOOP:
@@ -1075,7 +1075,7 @@ ROUND_PLAYER_COUNT_STEP:
         LD E,A  ; ROM $0931: 5F
         CALL SUBROUTINE_0C59  ; ROM $0932: CD 59 0C
         CP E  ; ROM $0935: BB
-        JP NZ,$0948  ; ROM $0936: C2 48 09
+        JP NZ,ROUND_PLAYER_COUNT_MISMATCH  ; ROM $0936: C2 48 09
         XOR A  ; ROM $0939: AF
         CALL SUBROUTINE_0C3B  ; ROM $093A: CD 3B 0C
         CALL SUBROUTINE_0C83  ; ROM $093D: CD 83 0C
@@ -1086,9 +1086,9 @@ ROUND_PLAYER_COUNT_STEP:
         POP BC  ; ROM $0947: C1
 ROUND_PLAYER_COUNT_MISMATCH:
         DEC C  ; ROM $0948: 0D
-        JP P,$092E  ; ROM $0949: F2 2E 09
+        JP P,ROUND_PLAYER_COUNT_STEP  ; ROM $0949: F2 2E 09
         DEC B  ; ROM $094C: 05
-        JP P,$092C  ; ROM $094D: F2 2C 09
+        JP P,ROUND_PLAYER_COUNT_INNER  ; ROM $094D: F2 2C 09
         LD A,$04  ; ROM $0950: 3E 04
         LD ($2017),A  ; ROM $0952: 32 17 20
 ROUND_END_FRAME_LOOP:
@@ -1103,19 +1103,19 @@ ROUND_SHOW_WINNER_LOOP:
         CALL SUBROUTINE_0C9C  ; ROM $0966: CD 9C 0C
         LD A,(HL)  ; ROM $0969: 7E
         AND A  ; ROM $096A: A7
-        JP Z,$095E  ; ROM $096B: CA 5E 09
+        JP Z,ROUND_SHOW_WINNER_LOOP  ; ROM $096B: CA 5E 09
         LD HL,($200E)  ; ROM $096E: 2A 0E 20
         LD A,($201A)  ; ROM $0971: 3A 1A 20
         CALL SUBROUTINE_0C9C  ; ROM $0974: CD 9C 0C
         CALL SUBROUTINE_0CE9  ; ROM $0977: CD E9 0C
         LD HL,$2019  ; ROM $097A: 21 19 20
         DEC (HL)  ; ROM $097D: 35
-        JP NZ,$095E  ; ROM $097E: C2 5E 09
+        JP NZ,ROUND_SHOW_WINNER_LOOP  ; ROM $097E: C2 5E 09
         LD A,$1E  ; ROM $0981: 3E 1E
         RST $18  ; ROM $0983: DF
         LD HL,$2017  ; ROM $0984: 21 17 20
         DEC (HL)  ; ROM $0987: 35
-        JP NZ,$0955  ; ROM $0988: C2 55 09
+        JP NZ,ROUND_END_FRAME_LOOP  ; ROM $0988: C2 55 09
         LD DE,$4000  ; ROM $098B: 11 00 40
         LD HL,$FF0E  ; ROM $098E: 21 0E FF
         CALL SUBROUTINE_0D11  ; ROM $0991: CD 11 0D
@@ -1149,7 +1149,7 @@ FLOW_09CD:
         LD A,E  ; ROM $09D5: 7B
         CALL SUBROUTINE_0C3B  ; ROM $09D6: CD 3B 0C
         DEC C  ; ROM $09D9: 0D
-        JP P,$09CD  ; ROM $09DA: F2 CD 09
+        JP P,FLOW_09CD  ; ROM $09DA: F2 CD 09
         LD B,$18  ; ROM $09DD: 06 18
 FLOW_09DF:
         LD C,$00  ; ROM $09DF: 0E 00
@@ -1159,10 +1159,10 @@ FLOW_09DF:
         LD A,E  ; ROM $09E7: 7B
         CALL SUBROUTINE_0C3B  ; ROM $09E8: CD 3B 0C
         DEC B  ; ROM $09EB: 05
-        JP P,$09DF  ; ROM $09EC: F2 DF 09
+        JP P,FLOW_09DF  ; ROM $09EC: F2 DF 09
         LD A,($2006)  ; ROM $09EF: 3A 06 20
         AND A  ; ROM $09F2: A7
-        JP Z,$0A08  ; ROM $09F3: CA 08 0A
+        JP Z,FLOW_0A08  ; ROM $09F3: CA 08 0A
         LD A,$FF  ; ROM $09F6: 3E FF
         LD ($21E8),A  ; ROM $09F8: 32 E8 21
         LD HL,$2008  ; ROM $09FB: 21 08 20
@@ -1208,7 +1208,7 @@ FLOW_0A15:
         LD (HL),$01  ; ROM $0A4A: 36 01
         LD A,($2009)  ; ROM $0A4C: 3A 09 20
         CP $01  ; ROM $0A4F: FE 01
-        JP NZ,$0A55  ; ROM $0A51: C2 55 0A
+        JP NZ,FLOW_0A55  ; ROM $0A51: C2 55 0A
         DEC (HL)  ; ROM $0A54: 35
 FLOW_0A55:
         INC HL  ; ROM $0A55: 23
@@ -1236,7 +1236,7 @@ FLOW_0A55:
         RST $20  ; ROM $0A75: E7
         POP AF  ; ROM $0A76: F1
         DEC A  ; ROM $0A77: 3D
-        JP NZ,$0A15  ; ROM $0A78: C2 15 0A
+        JP NZ,FLOW_0A15  ; ROM $0A78: C2 15 0A
         LD A,($2007)  ; ROM $0A7B: 3A 07 20
         LD ($2012),A  ; ROM $0A7E: 32 12 20
 FLOW_0A81:
@@ -1256,19 +1256,19 @@ FLOW_0A87:
         LD B,(HL)  ; ROM $0A95: 46
         LD A,B  ; ROM $0A96: 78
         OR C  ; ROM $0A97: B1
-        JP Z,$0AD4  ; ROM $0A98: CA D4 0A
+        JP Z,FLOW_0AD4  ; ROM $0A98: CA D4 0A
         LD A,B  ; ROM $0A9B: 78
         CP D  ; ROM $0A9C: BA
-        JP NZ,$0AB0  ; ROM $0A9D: C2 B0 0A
+        JP NZ,FLOW_0AB0  ; ROM $0A9D: C2 B0 0A
         LD A,C  ; ROM $0AA0: 79
         XOR E  ; ROM $0AA1: AB
-        JP NZ,$0AB0  ; ROM $0AA2: C2 B0 0A
+        JP NZ,FLOW_0AB0  ; ROM $0AA2: C2 B0 0A
         LD (HL),A  ; ROM $0AA5: 77
         DEC HL  ; ROM $0AA6: 2B
         LD (HL),A  ; ROM $0AA7: 77
         LD HL,$2012  ; ROM $0AA8: 21 12 20
         DEC (HL)  ; ROM $0AAB: 35
-        JP NZ,$0AD4  ; ROM $0AAC: C2 D4 0A
+        JP NZ,FLOW_0AD4  ; ROM $0AAC: C2 D4 0A
         RET  ; ROM $0AAF: C9
 FLOW_0AB0:
         PUSH HL  ; ROM $0AB0: E5
@@ -1299,13 +1299,13 @@ FLOW_0AD4:
         RST $20  ; ROM $0AD7: E7
         LD HL,$2017  ; ROM $0AD8: 21 17 20
         DEC (HL)  ; ROM $0ADB: 35
-        JP NZ,$0A87  ; ROM $0ADC: C2 87 0A
+        JP NZ,FLOW_0A87  ; ROM $0ADC: C2 87 0A
         LD A,$06  ; ROM $0ADF: 3E 06
         RST $18  ; ROM $0AE1: DF
         JP FLOW_0A81  ; ROM $0AE2: C3 81 0A
 SUBROUTINE_0AE5:
         RET Z  ; ROM $0AE5: C8
-        JP C,$0AEB  ; ROM $0AE6: DA EB 0A
+        JP C,FLOW_0AEB  ; ROM $0AE6: DA EB 0A
         DEC A  ; ROM $0AE9: 3D
         RET  ; ROM $0AEA: C9
 FLOW_0AEB:
@@ -1322,13 +1322,13 @@ FLOW_0AF4:
         RET Z  ; ROM $0AFB: C8
         LD A,($2006)  ; ROM $0AFC: 3A 06 20
         AND A  ; ROM $0AFF: A7
-        JP Z,$0AF4  ; ROM $0B00: CA F4 0A
+        JP Z,FLOW_0AF4  ; ROM $0B00: CA F4 0A
         LD A,($201A)  ; ROM $0B03: 3A 1A 20
         LD HL,$0FA0  ; ROM $0B06: 21 A0 0F
         CALL SUBROUTINE_0C9C  ; ROM $0B09: CD 9C 0C
         LD A,(HL)  ; ROM $0B0C: 7E
         AND A  ; ROM $0B0D: A7
-        JP Z,$0B35  ; ROM $0B0E: CA 35 0B
+        JP Z,FLOW_0B35  ; ROM $0B0E: CA 35 0B
         PUSH HL  ; ROM $0B11: E5
         LD BC,$0006  ; ROM $0B12: 01 06 00
         ADD HL,BC  ; ROM $0B15: 09
@@ -1336,11 +1336,11 @@ FLOW_0AF4:
         INC HL  ; ROM $0B17: 23
         OR (HL)  ; ROM $0B18: B6
         POP HL  ; ROM $0B19: E1
-        JP Z,$0B35  ; ROM $0B1A: CA 35 0B
+        JP Z,FLOW_0B35  ; ROM $0B1A: CA 35 0B
         INC HL  ; ROM $0B1D: 23
         LD A,(HL)  ; ROM $0B1E: 7E
         AND A  ; ROM $0B1F: A7
-        JP Z,$0B35  ; ROM $0B20: CA 35 0B
+        JP Z,FLOW_0B35  ; ROM $0B20: CA 35 0B
         DEC HL  ; ROM $0B23: 2B
         CALL SUBROUTINE_0B3C  ; ROM $0B24: CD 3C 0B
         LD HL,$0F64  ; ROM $0B27: 21 64 0F
@@ -1366,7 +1366,7 @@ SUBROUTINE_0B3C:
         LD B,(HL)  ; ROM $0B45: 46
         LD A,D  ; ROM $0B46: 7A
         AND A  ; ROM $0B47: A7
-        JP NZ,$0BAB  ; ROM $0B48: C2 AB 0B
+        JP NZ,FLOW_0BAB  ; ROM $0B48: C2 AB 0B
         XOR A  ; ROM $0B4B: AF
         LD ($201B),A  ; ROM $0B4C: 32 1B 20
         LD ($2021),A  ; ROM $0B4F: 32 21 20
@@ -1381,13 +1381,13 @@ SUBROUTINE_0B3C:
         LD HL,$2021  ; ROM $0B61: 21 21 20
         LD A,(HL)  ; ROM $0B64: 7E
         AND A  ; ROM $0B65: A7
-        JP Z,$0B96  ; ROM $0B66: CA 96 0B
+        JP Z,FLOW_0B96  ; ROM $0B66: CA 96 0B
         LD HL,$21E9  ; ROM $0B69: 21 E9 21
         PUSH AF  ; ROM $0B6C: F5
         CALL SUBROUTINE_0C8E  ; ROM $0B6D: CD 8E 0C
         POP AF  ; ROM $0B70: F1
         DEC (HL)  ; ROM $0B71: 35
-        JP P,$0B80  ; ROM $0B72: F2 80 0B
+        JP P,FLOW_0B80  ; ROM $0B72: F2 80 0B
         CALL SUBROUTINE_0D91  ; ROM $0B75: CD 91 0D
         AND $0F  ; ROM $0B78: E6 0F
         ADD A,$0A  ; ROM $0B7A: C6 0A
@@ -1401,9 +1401,9 @@ FLOW_0B80:
 FLOW_0B86:
         INC HL  ; ROM $0B86: 23
         CP (HL)  ; ROM $0B87: BE
-        JP Z,$0BA7  ; ROM $0B88: CA A7 0B
+        JP Z,FLOW_0BA7  ; ROM $0B88: CA A7 0B
         DEC D  ; ROM $0B8B: 15
-        JP NZ,$0B86  ; ROM $0B8C: C2 86 0B
+        JP NZ,FLOW_0B86  ; ROM $0B8C: C2 86 0B
 FLOW_0B8F:
         LD HL,$2021  ; ROM $0B8F: 21 21 20
         LD A,(HL)  ; ROM $0B92: 7E
@@ -1412,7 +1412,7 @@ FLOW_0B96:
         LD HL,$201B  ; ROM $0B96: 21 1B 20
         LD A,(HL)  ; ROM $0B99: 7E
         AND A  ; ROM $0B9A: A7
-        JP Z,$0BA7  ; ROM $0B9B: CA A7 0B
+        JP Z,FLOW_0BA7  ; ROM $0B9B: CA A7 0B
 FLOW_0B9E:
         CALL SUBROUTINE_0CB4  ; ROM $0B9E: CD B4 0C
         CALL SUBROUTINE_0C91  ; ROM $0BA1: CD 91 0C
@@ -1435,12 +1435,12 @@ FLOW_0BAB:
         RET Z  ; ROM $0BB4: C8
         CP $03  ; ROM $0BB5: FE 03
         LD A,D  ; ROM $0BB7: 7A
-        JP C,$0BC4  ; ROM $0BB8: DA C4 0B
+        JP C,FLOW_0BC4  ; ROM $0BB8: DA C4 0B
         LD E,$00  ; ROM $0BBB: 1E 00
 FLOW_0BBD:
         INC E  ; ROM $0BBD: 1C
         RRCA  ; ROM $0BBE: 0F
-        JP NC,$0BBD  ; ROM $0BBF: D2 BD 0B
+        JP NC,FLOW_0BBD  ; ROM $0BBF: D2 BD 0B
         LD A,E  ; ROM $0BC2: 7B
         RET  ; ROM $0BC3: C9
 FLOW_0BC4:
@@ -1448,7 +1448,7 @@ FLOW_0BC4:
 FLOW_0BC6:
         DEC E  ; ROM $0BC6: 1D
         RLCA  ; ROM $0BC7: 07
-        JP NC,$0BC6  ; ROM $0BC8: D2 C6 0B
+        JP NC,FLOW_0BC6  ; ROM $0BC8: D2 C6 0B
         LD A,E  ; ROM $0BCB: 7B
         RET  ; ROM $0BCC: C9
 SUBROUTINE_0BCD:
@@ -1474,11 +1474,11 @@ SUBROUTINE_0BDD:
 SUBROUTINE_0BE8:
         LD A,($21E9)  ; ROM $0BE8: 3A E9 21
         AND A  ; ROM $0BEB: A7
-        JP NZ,$0BFD  ; ROM $0BEC: C2 FD 0B
+        JP NZ,FLOW_0BFD  ; ROM $0BEC: C2 FD 0B
         PUSH HL  ; ROM $0BEF: E5
         CALL SUBROUTINE_0C59  ; ROM $0BF0: CD 59 0C
         LD A,D  ; ROM $0BF3: 7A
-        JP NZ,$0BF9  ; ROM $0BF4: C2 F9 0B
+        JP NZ,FLOW_0BF9  ; ROM $0BF4: C2 F9 0B
         OR $80  ; ROM $0BF7: F6 80
 FLOW_0BF9:
         RLCA  ; ROM $0BF9: 07
@@ -1505,7 +1505,7 @@ FLOW_0BFD:
         LD A,E  ; ROM $0C13: 7B
         LD D,$00  ; ROM $0C14: 16 00
         CP $03  ; ROM $0C16: FE 03
-        JP C,$0C21  ; ROM $0C18: DA 21 0C
+        JP C,FLOW_0C21  ; ROM $0C18: DA 21 0C
         CALL SUBROUTINE_0BD2  ; ROM $0C1B: CD D2 0B
         JP FLOW_0C24  ; ROM $0C1E: C3 24 0C
 FLOW_0C21:
@@ -1533,7 +1533,7 @@ SUBROUTINE_0C3B:
         PUSH AF  ; ROM $0C3D: F5
         CALL SUBROUTINE_0C6B  ; ROM $0C3E: CD 6B 0C
         LD A,(HL)  ; ROM $0C41: 7E
-        JP C,$0C50  ; ROM $0C42: DA 50 0C
+        JP C,FLOW_0C50  ; ROM $0C42: DA 50 0C
         AND $0F  ; ROM $0C45: E6 0F
         LD E,A  ; ROM $0C47: 5F
         POP AF  ; ROM $0C48: F1
@@ -1557,7 +1557,7 @@ SUBROUTINE_0C59:
         PUSH DE  ; ROM $0C5A: D5
         CALL SUBROUTINE_0C6B  ; ROM $0C5B: CD 6B 0C
         LD A,(HL)  ; ROM $0C5E: 7E
-        JP C,$0C66  ; ROM $0C5F: DA 66 0C
+        JP C,FLOW_0C66  ; ROM $0C5F: DA 66 0C
         RRCA  ; ROM $0C62: 0F
         RRCA  ; ROM $0C63: 0F
         RRCA  ; ROM $0C64: 0F
@@ -1627,7 +1627,7 @@ SUBROUTINE_0C9C:
 RST20_WRAP_PLAYER_INDEX:
         LD A,($2007)  ; ROM $0CA8: 3A 07 20
         CP (HL)  ; ROM $0CAB: BE
-        JP Z,$0CB1  ; ROM $0CAC: CA B1 0C
+        JP Z,FLOW_0CB1  ; ROM $0CAC: CA B1 0C
         INC (HL)  ; ROM $0CAF: 34
         RET  ; ROM $0CB0: C9
 FLOW_0CB1:
@@ -1646,7 +1646,7 @@ SUBROUTINE_0CB4:
 FLOW_0CC0:
         ADD HL,DE  ; ROM $0CC0: 19
         DEC A  ; ROM $0CC1: 3D
-        JP NZ,$0CC0  ; ROM $0CC2: C2 C0 0C
+        JP NZ,FLOW_0CC0  ; ROM $0CC2: C2 C0 0C
         LD A,H  ; ROM $0CC5: 7C
         INC A  ; ROM $0CC6: 3C
         POP DE  ; ROM $0CC7: D1
@@ -1670,7 +1670,7 @@ FLOW_0CE2:
         LD (HL),A  ; ROM $0CE2: 77
         ADD HL,DE  ; ROM $0CE3: 19
         DEC B  ; ROM $0CE4: 05
-        JP NZ,$0CE2  ; ROM $0CE5: C2 E2 0C
+        JP NZ,FLOW_0CE2  ; ROM $0CE5: C2 E2 0C
         RET  ; ROM $0CE8: C9
 SUBROUTINE_0CE9:
         LD DE,$0140  ; ROM $0CE9: 11 40 01
@@ -1689,13 +1689,13 @@ FLOW_0CF9:
         LD (HL),A  ; ROM $0CFB: 77
         INC HL  ; ROM $0CFC: 23
         DEC C  ; ROM $0CFD: 0D
-        JP NZ,$0CF9  ; ROM $0CFE: C2 F9 0C
+        JP NZ,FLOW_0CF9  ; ROM $0CFE: C2 F9 0C
         LD A,(HL)  ; ROM $0D01: 7E
         XOR $03  ; ROM $0D02: EE 03
         LD (HL),A  ; ROM $0D04: 77
         ADD HL,DE  ; ROM $0D05: 19
         DEC B  ; ROM $0D06: 05
-        JP NZ,$0CF2  ; ROM $0D07: C2 F2 0C
+        JP NZ,FLOW_0CF2  ; ROM $0D07: C2 F2 0C
         RET  ; ROM $0D0A: C9
 SUBROUTINE_0D0B:
         LD DE,$4000  ; ROM $0D0B: 11 00 40
@@ -1727,7 +1727,7 @@ FLOW_0D1B:
         PUSH BC  ; ROM $0D29: C5
         PUSH BC  ; ROM $0D2A: C5
         DEC A  ; ROM $0D2B: 3D
-        JP NZ,$0D1B  ; ROM $0D2C: C2 1B 0D
+        JP NZ,FLOW_0D1B  ; ROM $0D2C: C2 1B 0D
         EX DE,HL  ; ROM $0D2F: EB
         LD SP,HL  ; ROM $0D30: F9
         EI  ; ROM $0D31: FB
@@ -1750,7 +1750,7 @@ FLOW_0D3D:
         ADD HL,BC  ; ROM $0D43: 09
         DEC A  ; ROM $0D44: 3D
         LD B,A  ; ROM $0D45: 47
-        JP NZ,$0D3D  ; ROM $0D46: C2 3D 0D
+        JP NZ,FLOW_0D3D  ; ROM $0D46: C2 3D 0D
         RET  ; ROM $0D49: C9
         DB $06,$08,$0E,$20,$7E,$12,$13,$78,$06,$00,$09,$47 ; ROM $0D4A preserved non-executable data / unresolved structure
         DB $05,$C2,$4E,$0D,$C9 ; ROM $0D56 preserved non-executable data / unresolved structure
@@ -1786,7 +1786,7 @@ FLOW_0D83:
         CALL SUBROUTINE_0520  ; ROM $0D83: CD 20 05
         LD A,($21BE)  ; ROM $0D86: 3A BE 21
         AND A  ; ROM $0D89: A7
-        JP NZ,$0D83  ; ROM $0D8A: C2 83 0D
+        JP NZ,FLOW_0D83  ; ROM $0D8A: C2 83 0D
         POP HL  ; ROM $0D8D: E1
         POP DE  ; ROM $0D8E: D1
         POP BC  ; ROM $0D8F: C1
@@ -1821,7 +1821,7 @@ FLOW_0D99:
         RLA  ; ROM $0DAF: 17
         LD (HL),A  ; ROM $0DB0: 77
         DEC B  ; ROM $0DB1: 05
-        JP NZ,$0D99  ; ROM $0DB2: C2 99 0D
+        JP NZ,FLOW_0D99  ; ROM $0DB2: C2 99 0D
         POP BC  ; ROM $0DB5: C1
         POP HL  ; ROM $0DB6: E1
         RET  ; ROM $0DB7: C9
@@ -1833,7 +1833,7 @@ FLOW_0DBB:
         LD A,(HL)  ; ROM $0DBF: 7E
         AND A  ; ROM $0DC0: A7
         INC HL  ; ROM $0DC1: 23
-        JP P,$0DBB  ; ROM $0DC2: F2 BB 0D
+        JP P,FLOW_0DBB  ; ROM $0DC2: F2 BB 0D
         RET  ; ROM $0DC5: C9
 SUBROUTINE_0DC6:
         CALL SUBROUTINE_0DD4  ; ROM $0DC6: CD D4 0D
@@ -1843,7 +1843,7 @@ SUBROUTINE_0DC9:
         LD A,(HL)  ; ROM $0DCD: 7E
         AND A  ; ROM $0DCE: A7
         INC HL  ; ROM $0DCF: 23
-        JP P,$0DC9  ; ROM $0DD0: F2 C9 0D
+        JP P,SUBROUTINE_0DC9  ; ROM $0DD0: F2 C9 0D
         RET  ; ROM $0DD3: C9
 SUBROUTINE_0DD4:
         LD HL,$0E1A  ; ROM $0DD4: 21 1A 0E
@@ -1877,11 +1877,11 @@ FLOW_0DF7:
         POP BC  ; ROM $0DFE: C1
         POP AF  ; ROM $0DFF: F1
         DEC C  ; ROM $0E00: 0D
-        JP NZ,$0DF7  ; ROM $0E01: C2 F7 0D
+        JP NZ,FLOW_0DF7  ; ROM $0E01: C2 F7 0D
         ADD A,$10  ; ROM $0E04: C6 10
-        JP NC,$0DF6  ; ROM $0E06: D2 F6 0D
+        JP NC,FLOW_0DF6  ; ROM $0E06: D2 F6 0D
         DEC B  ; ROM $0E09: 05
-        JP NZ,$0DF4  ; ROM $0E0A: C2 F4 0D
+        JP NZ,FLOW_0DF4  ; ROM $0E0A: C2 F4 0D
         LD A,$0A  ; ROM $0E0D: 3E 0A
         OUT ($01),A  ; ROM $0E0F: D3 01
         RET  ; ROM $0E11: C9
