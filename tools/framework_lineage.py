@@ -46,6 +46,19 @@ def main():
         lines+=["No matching 1976–78 indexed handler-dispatch tail was",
           "found. This is NOT proof of no interpreter: alternate",
           "dispatch and native state tables remain research targets."]
+
+        lines += ["", "## Checkmate native service / language dispatch", "",
+          "Independent of the Boot Hill indexed VM, Checkmate has",
+          "RST $18 -> $0D7D (timer wait), RST $20 -> $0CA8 (player index),",
+          "and RST $28 -> $0C99/$0C9C (indexed 16-bit pointer lookup).",
+          "Input port $02 bits 5-6 select native pointers via $0DE8:",
+          "$0E3C -> $0628, $1000, $1003, $1006;",
+          "$0E44 -> $089F, $1009, $100C, $100F.",
+          "$0628-$0646 and $089F-$0994 are ROM-resident native code;",
+          "the other entries target undumped language ROM checkmat.d",
+          "at $1000-$13FF (MAME issue 1050).",
+          "This is not an opcode stream or a bytecode word dictionary.",
+          "See docs/checkmate-hard-re-20261031.md for native service ABI and RE."]
     lines+=["","## Comparison","",
        "| Runtime | Commands | Program representation |",
        "|---|---|---|",

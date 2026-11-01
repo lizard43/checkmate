@@ -2,9 +2,19 @@
 
 Byte-exact Intel 8080 reverse engineering of Midway **Checkmate**, using its original ROMs as the authority and comparing native program organization against DNA's pre-TERSE command interpreters.
 
+## Current hard RE: native services and optional language ROM
+
+**Research revision v20261031-0002:** [Native RST service and language-dispatch analysis](docs/checkmate-hard-re-20261031.md).
+
+The initial flow recovery missed two `JP (HL)` targets: `$0628–$0646` (31 bytes) and `$089F–$0994` (246 bytes). Both are now native 8080 instructions (124 additional instructions, 277 bytes). Two four-entry native dispatch tables `$0E3C/$0E44` are selected by language-switch bits 5–6 on input port `$02`. Their non-English targets `$1000–$100F` are within the **undumped fifth ROM `checkmat.d`** identified by MAME, not an unknown bytecode word table. See [MAME language ROM report](https://mametesters.org/view.php?id=1050).
+
+Checkmate also exposes three compact native services: `RST $18` timer wait, `RST $20` wrap player index and `RST $28` indexed word pointer lookup. These are native routines, not a proven interpreted command vocabulary. Checkmate's original 4 KB differs from the shared Boot Hill / Sea Wolf / baseball command dispatcher. Jamie Fenton's [first-person interview](https://www.artic.edu/pdf/static/download-collection.publications.digital-publications-sections.show-16.pdf) identifies Checkmate among her early DNA games.
+
+A source-comment byte audit against the original checked-in reconstruction shows **0 differing bytes across 4,096**, with no duplicate/missing ROM bytes or unresolved symbolic jump labels. **A new zmac build/roundtrip has not been run**.
+
 ## Verified reconstruction
 
-Four **1 KB** original ROM devices form a contiguous **4 KB** program image at CPU `$0000–$0FFF`. Control-flow traversal has recovered **1,452 native Intel 8080 instructions**, representing **2,601 bytes** of executable ROM. Unclassified regions remain byte-faithful `DB` data.
+Four dumped **1 KB** original ROM devices form a contiguous **4 KB** program image at CPU `$0000–$0FFF`. The separate `checkmat.d` language ROM at `$1000–$13FF` remains undumped. Baseline control-flow traversal recovered **1,452 native Intel 8080 instructions** across **2,601 program bytes**. This RE pass additionally recovered **124 native instructions and 277 executable bytes** behind indirect language jumps. Genuine non-code regions remain byte-faithful `DB` data; remaining unclassified or mixed regions are conservatively documented.
 
 The complete reconstructed code is in [src/checkmate.asm](src/checkmate.asm), with assembler listing `src/zout/checkmate.lst`, bank images and emulator ROM ZIP under `roms/build/`.
 
@@ -16,7 +26,7 @@ The exact 1976–78 DNA interpreter dispatch signature — shift opcode, index a
 
 That is a *signature-negative result*, not a claim that Checkmate lacks higher-level scripting. Its direct native 8080 routines and game-state tables remain an important control case in the framework ancestry analysis. Boot Hill, by contrast, contains a verified 16-command indexed VM; Tornado Baseball contains 26 commands; Double Play and Extra Inning contain 28.
 
-See the [framework comparison](docs/framework-lineage.md) and [machine-readable native recovery](docs/recovery.json).
+See the [new hard-RE findings](docs/checkmate-hard-re-20261031.md), [framework comparison](docs/framework-lineage.md), and [machine-readable native recovery](docs/recovery.json).
 
 ## Memory map
 
@@ -26,6 +36,7 @@ See the [framework comparison](docs/framework-lineage.md) and [machine-readable 
 | `$0400–$07FF` | `checkmat.g` |
 | `$0800–$0BFF` | `checkmat.f` |
 | `$0C00–$0FFF` | `checkmat.e` |
+| `$1000–$13FF` | `checkmat.d` — optional language ROM, undumped |
 | `$2000–$23FF` | Candidate work RAM; board decoding not yet verified |
 | `$2400–$3FFF` | Candidate display RAM; board decoding not yet verified |
 
