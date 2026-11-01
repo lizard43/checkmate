@@ -4,32 +4,39 @@
 
         ORG $0000
 ; Device checkmat.h, SHA1 f758599d6393398a6a8e6e7399dc1a3862604f65
+; Reset: clear output latch and enter startup diagnostic.
 RESET_ENTRY:
         NOP  ; ROM $0000: 00
         NOP  ; ROM $0001: 00
         XOR A  ; ROM $0002: AF
         OUT ($01),A  ; ROM $0003: D3 01
         JP BOOT_ROM_RAM_DIAGNOSTIC  ; ROM $0005: C3 97 00
+; Interrupt path 0: save registers, scan coin and timers without player input branch.
 IRQ_VBLANK_ENTRY:
         PUSH AF  ; ROM $0008: F5
         PUSH BC  ; ROM $0009: C5
         PUSH DE  ; ROM $000A: D5
         LD B,$00  ; ROM $000B: 06 00
         JP IRQ_COMMON_INPUT_SCAN  ; ROM $000D: C3 2B 00
+; Interrupt path 1: save registers and select player-input scan.
 IRQ_TICK_ENTRY:
         PUSH AF  ; ROM $0010: F5
         PUSH BC  ; ROM $0011: C5
         PUSH DE  ; ROM $0012: D5
         LD B,$01  ; ROM $0013: 06 01
         JP IRQ_COMMON_INPUT_SCAN  ; ROM $0015: C3 2B 00
+; Jump vector followed by packed high-bit-terminated MAT label bytes.
 START_MESSAGE_VECTOR:
         JP START_MESSAGE_HANDLER  ; ROM $0018: C3 7D 0D
         DB $08,$4D,$41,$54,$C5 ; ROM $001B entry-vector inline high-bit-terminated label
+; Jump vector followed by packed high-bit-terminated COIN label bytes.
 COIN_MESSAGE_VECTOR:
         JP COIN_MESSAGE_HANDLER  ; ROM $0020: C3 A8 0C
         DB $08,$43,$4F,$49,$CE ; ROM $0023 entry-vector inline high-bit-terminated label
+; Direct entry to game message routine.
 GAME_MESSAGE_VECTOR:
         JP GAME_MESSAGE_HANDLER  ; ROM $0028: C3 99 0C
+; Shared IRQ body: sample port 03, decrement timers, capture four input nibbles.
 IRQ_COMMON_INPUT_SCAN:
         PUSH HL  ; ROM $002B: E5
         CALL SAMPLE_COIN_EDGE  ; ROM $002C: CD 7F 00
@@ -71,6 +78,7 @@ FLOW_006B:
         AND $0F  ; ROM $0071: E6 0F
         JP Z,$0079  ; ROM $0073: CA 79 00
         LD ($21DA),A  ; ROM $0076: 32 DA 21
+; Restore 8080 registers, re-enable interrupts and return.
 IRQ_RESTORE_REGISTERS:
         POP HL  ; ROM $0079: E1
         POP DE  ; ROM $007A: D1
@@ -78,6 +86,7 @@ IRQ_RESTORE_REGISTERS:
         POP AF  ; ROM $007C: F1
         EI  ; ROM $007D: FB
         RET  ; ROM $007E: C9
+; Stable port-03 sample detection; record changed high coin-edge bit in RAM 2001.
 SAMPLE_COIN_EDGE:
         IN A,($03)  ; ROM $007F: DB 03
         LD C,A  ; ROM $0081: 4F
@@ -93,20 +102,24 @@ SAMPLE_COIN_EDGE:
         INC HL  ; ROM $008F: 23
         LD (HL),A  ; ROM $0090: 77
         RET  ; ROM $0091: C9
+; Decrement byte at HL only when already nonzero.
 DEC_NONZERO_TIMER:
         LD A,(HL)  ; ROM $0092: 7E
         AND A  ; ROM $0093: A7
         RET Z  ; ROM $0094: C8
         DEC (HL)  ; ROM $0095: 35
         RET  ; ROM $0096: C9
+; Startup tests: port 02 gate, RAM patterns and ROM checksums.
 BOOT_ROM_RAM_DIAGNOSTIC:
         IN A,($02)  ; ROM $0097: DB 02
         AND $80  ; ROM $0099: E6 80
         JP Z,$04F9  ; ROM $009B: CA F9 04
         LD B,$01  ; ROM $009E: 06 01
         LD DE,$0000  ; ROM $00A0: 11 00 00
+; Begin RAM pattern pass with pointer HL at 2000.
 DIAG_RAM_PASS_BEGIN:
         LD HL,$2000  ; ROM $00A3: 21 00 20
+; Walk candidate RAM and compare against test pattern B.
 DIAG_RAM_FORWARD_SCAN:
         OUT ($02),A  ; ROM $00A6: D3 02
         LD (HL),B  ; ROM $00A8: 70
@@ -129,6 +142,7 @@ FLOW_00BD:
         LD A,H  ; ROM $00BE: 7C
         CP $40  ; ROM $00BF: FE 40
         JP NZ,$00A6  ; ROM $00C1: C2 A6 00
+; Reverse RAM sweep; accumulate changed bits in D/E.
 DIAG_RAM_REVERSE_SCAN:
         OUT ($02),A  ; ROM $00C4: D3 02
         DEC HL  ; ROM $00C6: 2B
@@ -168,6 +182,7 @@ FLOW_00F5:
         LD E,A  ; ROM $00F6: 5F
 FLOW_00F7:
         JP DIAG_RAM_REVERSE_SCAN  ; ROM $00F7: C3 C4 00
+; Forward cleanup sweep of RAM pattern.
 DIAG_RAM_FINAL_SCAN:
         OUT ($02),A  ; ROM $00FA: D3 02
         INC HL  ; ROM $00FC: 23
@@ -193,6 +208,7 @@ FLOW_0118:
         XOR A  ; ROM $0118: AF
         LD (HL),A  ; ROM $0119: 77
         JP DIAG_RAM_FINAL_SCAN  ; ROM $011A: C3 FA 00
+; Determine whether a memory bit failed and format error output.
 DIAG_TEST_RESULT:
         LD A,B  ; ROM $011D: 78
         RLCA  ; ROM $011E: 07
@@ -225,15 +241,18 @@ FLOW_013B:
         DEC B  ; ROM $0145: 05
         JP NZ,$012F  ; ROM $0146: C2 2F 01
         JP DIAG_FAILURE_HALT  ; ROM $0149: C3 85 01
+; Initialize stack and checksum passes across four 1 KB ROM banks.
 DIAG_ROM_CHECKSUM:
         LD SP,$2400  ; ROM $014C: 31 00 24
         LD HL,$280C  ; ROM $014F: 21 0C 28
         PUSH HL  ; ROM $0152: E5
         LD HL,$0000  ; ROM $0153: 21 00 00
         LD DE,$0193  ; ROM $0156: 11 93 01
+; Run one ROM device checksum and fault-report iteration.
 DIAG_ROM_BANK_LOOP:
         LD BC,$0400  ; ROM $0159: 01 00 04
         XOR A  ; ROM $015C: AF
+; Accumulate bytes, output progress to port 02.
 DIAG_ROM_SUM_LOOP:
         ADD A,(HL)  ; ROM $015D: 86
         OUT ($02),A  ; ROM $015E: D3 02
@@ -261,6 +280,7 @@ FLOW_0177:
         LD A,L  ; ROM $017F: 7D
         CP $0C  ; ROM $0180: FE 0C
         JP Z,$0000  ; ROM $0182: CA 00 00
+; Failure loop: repeated output to port 02.
 DIAG_FAILURE_HALT:
         OUT ($02),A  ; ROM $0185: D3 02
         JP DIAG_FAILURE_HALT  ; ROM $0187: C3 85 01
@@ -315,6 +335,7 @@ DIAG_FAILURE_HALT:
         DB $11,$DD,$99,$DD,$11,$FF,$FF,$FF,$FF,$FF,$11,$5D ; ROM $03CA 8-bit glyph and tile bitmap bytes
         DB $59,$5D,$1D,$FF,$FF,$FF,$FF,$FF,$95,$55,$95,$55 ; ROM $03D6 8-bit glyph and tile bitmap bytes
         DB $51,$FF,$FF ; ROM $03E2 8-bit glyph and tile bitmap bytes
+; Process high-nibble pixel data and call display cursor utility.
 ADVANCE_GLYPH_NIBBLE:
         LD A,(HL)  ; ROM $03E5: 7E
         AND $F0  ; ROM $03E6: E6 F0
@@ -331,12 +352,14 @@ FLOW_03F4:
         CALL DRAW_GLYPH_NIBBLE  ; ROM $03F8: CD FC 03
 FLOW_03FB:
         LD A,(HL)  ; ROM $03FB: 7E
+; Low-nibble glyph-to-display drawing path.
 DRAW_GLYPH_NIBBLE:
         AND $0F  ; ROM $03FC: E6 0F
         ADD A,$30  ; ROM $03FE: C6 30
 
         ORG $0400
 ; Device checkmat.g, SHA1 484ff9bfb95166ba09f34c753a7908a73de3cc7d
+; Map glyph advances into 32-byte display rows.
 ADVANCE_DISPLAY_CURSOR:
         AND $7F  ; ROM $0400: E6 7F
         CP $30  ; ROM $0402: FE 30
@@ -344,6 +367,7 @@ ADVANCE_DISPLAY_CURSOR:
         JP NC,$041D  ; ROM $0406: D2 1D 04
         EX DE,HL  ; ROM $0409: EB
         LD BC,$01E0  ; ROM $040A: 01 E0 01
+; Advance display cursor across a 32-byte row boundary.
 ADVANCE_DISPLAY_ROW:
         PUSH AF  ; ROM $040D: F5
         INC HL  ; ROM $040E: 23
@@ -476,6 +500,7 @@ FLOW_048C:
         DB $00,$00,$0A,$00,$00,$24,$18,$18,$24,$00,$00,$0A ; ROM $04DB preserved non-executable data / unresolved structure
         DB $00,$24,$42,$18,$18,$42,$24,$00,$14,$52,$81,$24 ; ROM $04E7 preserved non-executable data / unresolved structure
         DB $11,$88,$24,$81,$4A,$00 ; ROM $04F3 preserved non-executable data / unresolved structure
+; Game initialization target after diagnostic port-02 gate.
 BOOT_GAME_INIT:
         LD SP,$2400  ; ROM $04F9: 31 00 24
         CALL SUBROUTINE_0D0B  ; ROM $04FC: CD 0B 0D
@@ -1469,6 +1494,7 @@ SUBROUTINE_0C91:
         POP DE  ; ROM $0C96: D1
         LD A,(HL)  ; ROM $0C97: 7E
         RET  ; ROM $0C98: C9
+; Game screen message entry from vector 0028.
 GAME_MESSAGE_HANDLER:
         LD A,($2011)  ; ROM $0C99: 3A 11 20
 SUBROUTINE_0C9C:
@@ -1483,6 +1509,7 @@ SUBROUTINE_0C9C:
         EX DE,HL  ; ROM $0CA5: EB
         POP DE  ; ROM $0CA6: D1
         RET  ; ROM $0CA7: C9
+; Coin screen message entry from vector 0020.
 COIN_MESSAGE_HANDLER:
         LD A,($2007)  ; ROM $0CA8: 3A 07 20
         CP (HL)  ; ROM $0CAB: BE
@@ -1635,6 +1662,7 @@ SUBROUTINE_0D78:
         EX DE,HL  ; ROM $0D78: EB
         LD ($2004),HL  ; ROM $0D79: 22 04 20
         RET  ; ROM $0D7C: C9
+; Start screen message entry from vector 0018.
 START_MESSAGE_HANDLER:
         LD ($21BE),A  ; ROM $0D7D: 32 BE 21
         PUSH BC  ; ROM $0D80: C5
