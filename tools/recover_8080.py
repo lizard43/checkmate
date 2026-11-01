@@ -81,7 +81,7 @@ def data_role(pc):
     if pc in (0x001B, 0x0023): return "entry-vector inline high-bit-terminated label"
     return "preserved non-executable data / unresolved structure"
 def symbolic_instruction(inst):
-    m = re.match(r"^(JP|CALL)( [A-Z]+,)? \\$([0-9A-F]{4})$",inst)
+    m = re.match(r"^(JP|CALL)( [A-Z]+,)? \$([0-9A-F]{4})$",inst)
     if not m: return inst
     name = LABELS.get(m.group(3))
     return m.group(1)+(m.group(2) or "")+" "+name if name else inst
