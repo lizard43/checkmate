@@ -27,15 +27,15 @@ IRQ_TICK_ENTRY:
         JP IRQ_COMMON_INPUT_SCAN  ; ROM $0015: C3 2B 00
 ; Jump vector followed by packed high-bit-terminated MAT label bytes.
 START_MESSAGE_VECTOR:
-        JP START_MESSAGE_HANDLER  ; ROM $0018: C3 7D 0D
+        JP RST18_WAIT_TIMER  ; ROM $0018: C3 7D 0D
         DB $08,$4D,$41,$54,$C5 ; ROM $001B entry-vector inline high-bit-terminated label
 ; Jump vector followed by packed high-bit-terminated COIN label bytes.
 COIN_MESSAGE_VECTOR:
-        JP COIN_MESSAGE_HANDLER  ; ROM $0020: C3 A8 0C
+        JP RST20_WRAP_PLAYER_INDEX  ; ROM $0020: C3 A8 0C
         DB $08,$43,$4F,$49,$CE ; ROM $0023 entry-vector inline high-bit-terminated label
 ; Direct entry to game message routine.
 GAME_MESSAGE_VECTOR:
-        JP GAME_MESSAGE_HANDLER  ; ROM $0028: C3 99 0C
+        JP RST28_INDEXED_LOOKUP  ; ROM $0028: C3 99 0C
 ; Shared IRQ body: sample port 03, decrement timers, capture four input nibbles.
 IRQ_COMMON_INPUT_SCAN:
         PUSH HL  ; ROM $002B: E5
@@ -660,9 +660,22 @@ FLOW_0621:
         LD HL,$0E3C  ; ROM $0621: 21 3C 0E
         CALL SUBROUTINE_0DE8  ; ROM $0624: CD E8 0D
         JP (HL)  ; ROM $0627: E9
-        DB $D5,$11,$41,$2A,$21,$54,$0E,$CD,$BB,$0D,$13,$13 ; ROM $0628 preserved non-executable data / unresolved structure
-        DB $C1,$3A,$07,$20,$91,$C6,$31,$CD,$4C,$04,$11,$48 ; ROM $0634 preserved non-executable data / unresolved structure
-        DB $34,$21,$5A,$0E,$CD,$BB,$0D ; ROM $0640 preserved non-executable data / unresolved structure
+; Selected when input port $02 language bits choose language 0; four-way native jump.
+LANGUAGE0_INTRO_RENDER:
+        PUSH DE  ; ROM $0628: D5
+        LD DE,$2A41  ; ROM $0629: 11 41 2A
+        LD HL,$0E54  ; ROM $062C: 21 54 0E
+        CALL FLOW_0DBB  ; ROM $062F: CD BB 0D
+        INC DE  ; ROM $0632: 13
+        INC DE  ; ROM $0633: 13
+        POP BC  ; ROM $0634: C1
+        LD A,($2007)  ; ROM $0635: 3A 07 20
+        SUB C  ; ROM $0638: 91
+        ADD A,$31  ; ROM $0639: C6 31
+        CALL SUBROUTINE_044C  ; ROM $063B: CD 4C 04
+        LD DE,$3448  ; ROM $063E: 11 48 34
+        LD HL,$0E5A  ; ROM $0641: 21 5A 0E
+        CALL FLOW_0DBB  ; ROM $0644: CD BB 0D
 FLOW_0647:
         LD A,$FF  ; ROM $0647: 3E FF
         RST $18  ; ROM $0649: DF
@@ -985,27 +998,128 @@ FLOW_088C:
         LD HL,$0E44  ; ROM $0898: 21 44 0E
         CALL SUBROUTINE_0DE8  ; ROM $089B: CD E8 0D
         JP (HL)  ; ROM $089E: E9
-        DB $3E,$FF,$32,$E8,$21,$11,$61,$3E,$21,$54,$0E,$CD ; ROM $089F preserved non-executable data / unresolved structure
-        DB $C9,$0D,$13,$21,$FF,$0E,$EF,$CD,$C9,$0D,$13,$CD ; ROM $08AB preserved non-executable data / unresolved structure
-        DB $91,$0D,$E6,$03,$21,$18,$0F,$CD,$9C,$0C,$CD,$C9 ; ROM $08B7 preserved non-executable data / unresolved structure
-        DB $0D,$AF,$32,$E8,$21,$2A,$15,$20,$11,$E0,$21,$CD ; ROM $08C3 preserved non-executable data / unresolved structure
-        DB $4A,$0D,$11,$D4,$04,$1A,$13,$A7,$CA,$E6,$08,$F5 ; ROM $08CF preserved non-executable data / unresolved structure
-        DB $2A,$15,$20,$CD,$39,$0D,$F1,$DF,$C3,$D4,$08,$2A ; ROM $08DB preserved non-executable data / unresolved structure
-        DB $15,$20,$11,$E0,$21,$CD,$39,$0D,$2A,$13,$20,$36 ; ROM $08E7 preserved non-executable data / unresolved structure
-        DB $00,$3A,$06,$20,$A7,$CA,$26,$09,$3A,$11,$20,$F5 ; ROM $08F3 preserved non-executable data / unresolved structure
-        DB $3A,$07,$20,$32,$11,$20,$21,$A0,$0F,$EF,$7E,$A7 ; ROM $08FF preserved non-executable data / unresolved structure
-        DB $CA,$1B,$09,$21,$26,$20,$CD,$8E,$0C,$7E,$3C,$27 ; ROM $090B preserved non-executable data / unresolved structure
-        DB $77,$CD,$CA,$0C,$21,$11,$20,$35,$C2,$05,$09,$F1 ; ROM $0917 preserved non-executable data / unresolved structure
-        DB $32,$11,$20,$21,$12,$20,$35,$06,$19,$0E,$1F,$3A ; ROM $0923 preserved non-executable data / unresolved structure
-        DB $11,$20,$5F,$CD,$59,$0C,$BB,$C2,$48,$09,$AF,$CD ; ROM $092F preserved non-executable data / unresolved structure
-        DB $3B,$0C,$CD,$83,$0C,$C5,$06,$08,$AF,$CD,$DF,$0C ; ROM $093B preserved non-executable data / unresolved structure
-        DB $C1,$0D,$F2,$2E,$09,$05,$F2,$2C,$09,$3E,$04,$32 ; ROM $0947 preserved non-executable data / unresolved structure
-        DB $17,$20,$3A,$12,$20,$32,$19,$20,$32,$1A,$20,$21 ; ROM $0953 preserved non-executable data / unresolved structure
-        DB $1A,$20,$E7,$7E,$21,$A0,$0F,$CD,$9C,$0C,$7E,$A7 ; ROM $095F preserved non-executable data / unresolved structure
-        DB $CA,$5E,$09,$2A,$0E,$20,$3A,$1A,$20,$CD,$9C,$0C ; ROM $096B preserved non-executable data / unresolved structure
-        DB $CD,$E9,$0C,$21,$19,$20,$35,$C2,$5E,$09,$3E,$1E ; ROM $0977 preserved non-executable data / unresolved structure
-        DB $DF,$21,$17,$20,$35,$C2,$55,$09,$11,$00,$40,$21 ; ROM $0983 preserved non-executable data / unresolved structure
-        DB $0E,$FF,$CD,$11,$0D,$C9 ; ROM $098F preserved non-executable data / unresolved structure
+; Selected from second language dispatch table; round and scoreboard logic.
+LANGUAGE0_ROUND_SETUP:
+        LD A,$FF  ; ROM $089F: 3E FF
+        LD ($21E8),A  ; ROM $08A1: 32 E8 21
+        LD DE,$3E61  ; ROM $08A4: 11 61 3E
+        LD HL,$0E54  ; ROM $08A7: 21 54 0E
+        CALL SUBROUTINE_0DC9  ; ROM $08AA: CD C9 0D
+        INC DE  ; ROM $08AD: 13
+        LD HL,$0EFF  ; ROM $08AE: 21 FF 0E
+        RST $28  ; ROM $08B1: EF
+        CALL SUBROUTINE_0DC9  ; ROM $08B2: CD C9 0D
+        INC DE  ; ROM $08B5: 13
+        CALL SUBROUTINE_0D91  ; ROM $08B6: CD 91 0D
+        AND $03  ; ROM $08B9: E6 03
+        LD HL,$0F18  ; ROM $08BB: 21 18 0F
+        CALL SUBROUTINE_0C9C  ; ROM $08BE: CD 9C 0C
+        CALL SUBROUTINE_0DC9  ; ROM $08C1: CD C9 0D
+        XOR A  ; ROM $08C4: AF
+        LD ($21E8),A  ; ROM $08C5: 32 E8 21
+        LD HL,($2015)  ; ROM $08C8: 2A 15 20
+        LD DE,$21E0  ; ROM $08CB: 11 E0 21
+        CALL $0D4A  ; ROM $08CE: CD 4A 0D
+        LD DE,$04D4  ; ROM $08D1: 11 D4 04
+ROUND_WINNER_TEXT_LOOP:
+        LD A,(DE)  ; ROM $08D4: 1A
+        INC DE  ; ROM $08D5: 13
+        AND A  ; ROM $08D6: A7
+        JP Z,$08E6  ; ROM $08D7: CA E6 08
+        PUSH AF  ; ROM $08DA: F5
+        LD HL,($2015)  ; ROM $08DB: 2A 15 20
+        CALL SUBROUTINE_0D39  ; ROM $08DE: CD 39 0D
+        POP AF  ; ROM $08E1: F1
+        RST $18  ; ROM $08E2: DF
+        JP ROUND_WINNER_TEXT_LOOP  ; ROM $08E3: C3 D4 08
+ROUND_WINNER_TEXT_END:
+        LD HL,($2015)  ; ROM $08E6: 2A 15 20
+        LD DE,$21E0  ; ROM $08E9: 11 E0 21
+        CALL SUBROUTINE_0D39  ; ROM $08EC: CD 39 0D
+        LD HL,($2013)  ; ROM $08EF: 2A 13 20
+        LD (HL),$00  ; ROM $08F2: 36 00
+        LD A,($2006)  ; ROM $08F4: 3A 06 20
+        AND A  ; ROM $08F7: A7
+        JP Z,$0926  ; ROM $08F8: CA 26 09
+        LD A,($2011)  ; ROM $08FB: 3A 11 20
+        PUSH AF  ; ROM $08FE: F5
+        LD A,($2007)  ; ROM $08FF: 3A 07 20
+        LD ($2011),A  ; ROM $0902: 32 11 20
+ROUND_SCORE_UPDATE_LOOP:
+        LD HL,$0FA0  ; ROM $0905: 21 A0 0F
+        RST $28  ; ROM $0908: EF
+        LD A,(HL)  ; ROM $0909: 7E
+        AND A  ; ROM $090A: A7
+        JP Z,$091B  ; ROM $090B: CA 1B 09
+        LD HL,$2026  ; ROM $090E: 21 26 20
+        CALL SUBROUTINE_0C8E  ; ROM $0911: CD 8E 0C
+        LD A,(HL)  ; ROM $0914: 7E
+        INC A  ; ROM $0915: 3C
+        DAA  ; ROM $0916: 27
+        LD (HL),A  ; ROM $0917: 77
+        CALL SUBROUTINE_0CCA  ; ROM $0918: CD CA 0C
+ROUND_SCORE_UPDATE_DONE:
+        LD HL,$2011  ; ROM $091B: 21 11 20
+        DEC (HL)  ; ROM $091E: 35
+        JP NZ,$0905  ; ROM $091F: C2 05 09
+        POP AF  ; ROM $0922: F1
+        LD ($2011),A  ; ROM $0923: 32 11 20
+ROUND_PLAYER_COUNT_LOOP:
+        LD HL,$2012  ; ROM $0926: 21 12 20
+        DEC (HL)  ; ROM $0929: 35
+        LD B,$19  ; ROM $092A: 06 19
+ROUND_PLAYER_COUNT_INNER:
+        LD C,$1F  ; ROM $092C: 0E 1F
+ROUND_PLAYER_COUNT_STEP:
+        LD A,($2011)  ; ROM $092E: 3A 11 20
+        LD E,A  ; ROM $0931: 5F
+        CALL SUBROUTINE_0C59  ; ROM $0932: CD 59 0C
+        CP E  ; ROM $0935: BB
+        JP NZ,$0948  ; ROM $0936: C2 48 09
+        XOR A  ; ROM $0939: AF
+        CALL SUBROUTINE_0C3B  ; ROM $093A: CD 3B 0C
+        CALL SUBROUTINE_0C83  ; ROM $093D: CD 83 0C
+        PUSH BC  ; ROM $0940: C5
+        LD B,$08  ; ROM $0941: 06 08
+        XOR A  ; ROM $0943: AF
+        CALL SUBROUTINE_0CDF  ; ROM $0944: CD DF 0C
+        POP BC  ; ROM $0947: C1
+ROUND_PLAYER_COUNT_MISMATCH:
+        DEC C  ; ROM $0948: 0D
+        JP P,$092E  ; ROM $0949: F2 2E 09
+        DEC B  ; ROM $094C: 05
+        JP P,$092C  ; ROM $094D: F2 2C 09
+        LD A,$04  ; ROM $0950: 3E 04
+        LD ($2017),A  ; ROM $0952: 32 17 20
+ROUND_END_FRAME_LOOP:
+        LD A,($2012)  ; ROM $0955: 3A 12 20
+        LD ($2019),A  ; ROM $0958: 32 19 20
+        LD ($201A),A  ; ROM $095B: 32 1A 20
+ROUND_SHOW_WINNER_LOOP:
+        LD HL,$201A  ; ROM $095E: 21 1A 20
+        RST $20  ; ROM $0961: E7
+        LD A,(HL)  ; ROM $0962: 7E
+        LD HL,$0FA0  ; ROM $0963: 21 A0 0F
+        CALL SUBROUTINE_0C9C  ; ROM $0966: CD 9C 0C
+        LD A,(HL)  ; ROM $0969: 7E
+        AND A  ; ROM $096A: A7
+        JP Z,$095E  ; ROM $096B: CA 5E 09
+        LD HL,($200E)  ; ROM $096E: 2A 0E 20
+        LD A,($201A)  ; ROM $0971: 3A 1A 20
+        CALL SUBROUTINE_0C9C  ; ROM $0974: CD 9C 0C
+        CALL SUBROUTINE_0CE9  ; ROM $0977: CD E9 0C
+        LD HL,$2019  ; ROM $097A: 21 19 20
+        DEC (HL)  ; ROM $097D: 35
+        JP NZ,$095E  ; ROM $097E: C2 5E 09
+        LD A,$1E  ; ROM $0981: 3E 1E
+        RST $18  ; ROM $0983: DF
+        LD HL,$2017  ; ROM $0984: 21 17 20
+        DEC (HL)  ; ROM $0987: 35
+        JP NZ,$0955  ; ROM $0988: C2 55 09
+        LD DE,$4000  ; ROM $098B: 11 00 40
+        LD HL,$FF0E  ; ROM $098E: 21 0E FF
+        CALL SUBROUTINE_0D11  ; ROM $0991: CD 11 0D
+        RET  ; ROM $0994: C9
 SUBROUTINE_0995:
         LD DE,$4000  ; ROM $0995: 11 00 40
         LD HL,$FF0E  ; ROM $0998: 21 0E FF
@@ -1494,8 +1608,8 @@ SUBROUTINE_0C91:
         POP DE  ; ROM $0C96: D1
         LD A,(HL)  ; ROM $0C97: 7E
         RET  ; ROM $0C98: C9
-; Game screen message entry from vector 0028.
-GAME_MESSAGE_HANDLER:
+; RST $28: table lookup indexed by RAM $2011, then shared word fetch $0C9C.
+RST28_INDEXED_LOOKUP:
         LD A,($2011)  ; ROM $0C99: 3A 11 20
 SUBROUTINE_0C9C:
         RLCA  ; ROM $0C9C: 07
@@ -1509,8 +1623,8 @@ SUBROUTINE_0C9C:
         EX DE,HL  ; ROM $0CA5: EB
         POP DE  ; ROM $0CA6: D1
         RET  ; ROM $0CA7: C9
-; Coin screen message entry from vector 0020.
-COIN_MESSAGE_HANDLER:
+; RST $20: increment modulo player count at RAM $2007.
+RST20_WRAP_PLAYER_INDEX:
         LD A,($2007)  ; ROM $0CA8: 3A 07 20
         CP (HL)  ; ROM $0CAB: BE
         JP Z,$0CB1  ; ROM $0CAC: CA B1 0C
@@ -1662,8 +1776,8 @@ SUBROUTINE_0D78:
         EX DE,HL  ; ROM $0D78: EB
         LD ($2004),HL  ; ROM $0D79: 22 04 20
         RET  ; ROM $0D7C: C9
-; Start screen message entry from vector 0018.
-START_MESSAGE_HANDLER:
+; RST $18: wait while RAM $21BE countdown is nonzero, servicing $0520.
+RST18_WAIT_TIMER:
         LD ($21BE),A  ; ROM $0D7D: 32 BE 21
         PUSH BC  ; ROM $0D80: C5
         PUSH DE  ; ROM $0D81: D5
