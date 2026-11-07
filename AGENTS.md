@@ -1,0 +1,3 @@
+# Mandatory coding-assistant instructions
+
+Read ENGINEERING-RULES.md, docs/SPRINT-PLAN.md and docs/TECHNICAL-DEBT.md before any code changes. Original source/language/native compiler or XC/interpreter/runtime own program semantics. No JavaScript/Python TERSE parsers, source splitting, synthetic dictionary/address maps, substituted gameplay/graphics or post-XC token patching. Host tools may orchestrate, package native output and independently verify only. If an original approach is difficult, investigate; STOP and obtain explicit user approval BEFORE any deviation. Never claim a test that was not run; preserve existing history and plans.
